@@ -1,0 +1,55 @@
+<div class="starwarsd6 sheet actor character">
+  <header class="sheet-header">
+    <input type="text" name="name" value="{{document.name}}" placeholder="Character Name" />
+  </header>
+
+  <section class="sheet-body">
+    <h2>Attributes</h2>
+    <table class="attributes-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Dice</th>
+          <th>Pips</th>
+          <th>Base Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each attributeEntries as |attr|}}
+        <tr>
+          <td>{{localize attr.label}}</td>
+          <td><input type="number" name="system.{{attr.key}}.dice" value="{{attr.dice}}" min="1" /></td>
+          <td><input type="number" name="system.{{attr.key}}.pips" value="{{attr.pips}}" min="0" max="2" /></td>
+          <td class="base-value">{{attr.baseValue}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <h2>Skills</h2>
+    {{#if skills.length}}
+    <table class="skills-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Attribute</th>
+          <th>Rank</th>
+          <th>Dice Pool</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each skills as |skill|}}
+        <tr>
+          <td>{{skill.name}}</td>
+          <td>{{skill.system.attribute}}</td>
+          <td>{{skill.system.rank}}</td>
+          <td>{{skill.system.dicePool}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+    {{else}}
+    <p class="no-skills">No skills assigned.</p>
+    {{/if}}
+  </section>
+</div>
