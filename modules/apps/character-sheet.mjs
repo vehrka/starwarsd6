@@ -1,3 +1,6 @@
+import { rollWithWildDie } from "../helpers/dice.mjs";
+import RollDialog from "./roll-dialog.mjs";
+
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 
 const ATTRIBUTE_KEYS = ["DEX", "KNO", "MEC", "PER", "STR", "TEC"];
@@ -7,7 +10,11 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     classes: ["starwarsd6", "sheet", "actor", "character"],
     position: { width: 650, height: 600 },
     window: { resizable: true },
-    form: { submitOnChange: true, closeOnSubmit: false }
+    form: { submitOnChange: true, closeOnSubmit: false },
+    actions: {
+      rollSkill: CharacterSheet.#rollSkill,
+      rollAttribute: CharacterSheet.#rollAttribute
+    }
   };
 
   static PARTS = {
@@ -64,5 +71,88 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
         pips: skill.system.pips
       }));
     return context;
+  }
+
+  /**
+   * Handle a click on a skill's roll button.
+   * @this {CharacterSheet}
+   * @param {PointerEvent} event
+   * @param {HTMLElement} target  Element with data-action="rollSkill"
+   */
+  static async #rollSkill(event, target) {
+    const skillId = target.dataset.skillId;
+    const skill = this.document.items.get(skillId);
+    if (!skill) return;
+
+    const result = await RollDialog.prompt();
+    if (result === null) return; // cancelled
+
+    const { numActions } = result;
+    const penalty = numActions - 1;
+    const rollResult = await rollWithWildDie(skill.system.dicePool, skill.system.pips, penalty);
+
+    await CharacterSheet.#postRollToChat(this.document, skill.name, rollResult, numActions);
+  }
+
+  /**
+   * Handle a click on an attribute's roll button.
+   * @this {CharacterSheet}
+   * @param {PointerEvent} event
+   * @param {HTMLElement} target  Element with data-action="rollAttribute"
+   */
+  static async #rollAttribute(event, target) {
+    const attributeKey = target.dataset.attributeKey;
+    const attr = this.document.system[attributeKey];
+    if (!attr) return;
+
+    const result = await RollDialog.prompt();
+    if (result === null) return;
+
+    const { numActions } = result;
+    const penalty = numActions - 1;
+    const attrLabel = game.i18n.localize(`STARWARSD6.Attribute.${attributeKey}`);
+    const rollResult = await rollWithWildDie(attr.dice, attr.pips, penalty);
+
+    await CharacterSheet.#postRollToChat(this.document, attrLabel, rollResult, numActions);
+  }
+
+  /**
+   * Post a roll result to the chat log.
+   * @param {Actor} actor
+   * @param {string} label  — Skill or attribute name
+   * @param {RollResult} result
+   * @param {number} numActions
+   */
+  static async #postRollToChat(actor, label, result, numActions) {
+    const speaker = ChatMessage.getSpeaker({ actor });
+    const effectiveDice = result.normalDice.length + 1; // normal + wild
+    const penaltyNote = numActions > 1
+      ? ` (${numActions} ${game.i18n.localize("STARWARSD6.Roll.Actions")}, −${numActions - 1}D)`
+      : "";
+
+    // Build wild die display
+    const wildStr = result.wildRolls.length > 1
+      ? result.wildRolls.map((v, i) => i === 0 ? `<b>${v}</b>` : `→${v}`).join(" ")
+      : `<b>${result.wildRolls[0]}</b>`;
+
+    const complications = result.isComplication
+      ? `<span class="complication"> ⚠ ${game.i18n.localize("STARWARSD6.Roll.Complication")}</span>`
+      : "";
+    const explosion = result.wildRolls.length > 1
+      ? `<span class="explosion"> 💥 ${game.i18n.localize("STARWARSD6.Roll.Explosion")}</span>`
+      : "";
+
+    const normalStr = result.normalDice.length > 0
+      ? `Normal: [${result.normalDice.join(", ")}] | ` : "";
+    const pipsStr = result.pips > 0 ? ` +${result.pips} pips` : "";
+    const content = `
+      <div class="starwarsd6 roll-result">
+        <h3>${label}${penaltyNote}</h3>
+        <div class="roll-formula">${effectiveDice}D${pipsStr}</div>
+        <div class="roll-dice">${normalStr}Wild: ${wildStr}${explosion}${complications}</div>
+        <div class="roll-total"><strong>${game.i18n.localize("STARWARSD6.Roll.Total")}: ${result.total}</strong></div>
+      </div>`;
+
+    await ChatMessage.create({ speaker, content });
   }
 }

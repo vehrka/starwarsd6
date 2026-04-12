@@ -64,5 +64,14 @@
   "STARWARSD6.Skill.starfighter repair": "Starfighter Repair",
   "STARWARSD6.Skill.control": "Control",
   "STARWARSD6.Skill.sense": "Sense",
-  "STARWARSD6.Skill.alter": "Alter"
+  "STARWARSD6.Skill.alter": "Alter",
+  "STARWARSD6.RollDialog.Title": "Roll",
+  "STARWARSD6.RollDialog.NumActions": "Number of Actions",
+  "STARWARSD6.RollDialog.Roll": "Roll",
+  "STARWARSD6.RollDialog.Cancel": "Cancel",
+  "STARWARSD6.Roll.Label": "Roll",
+  "STARWARSD6.Roll.Total": "Total",
+  "STARWARSD6.Roll.Actions": "actions",
+  "STARWARSD6.Roll.Complication": "Complication!",
+  "STARWARSD6.Roll.Explosion": "Wild Die Exploded!"
 }
