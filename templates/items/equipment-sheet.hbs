@@ -1,0 +1,15 @@
+<div class="starwarsd6 sheet item equipment">
+  <header class="sheet-header">
+    <input type="text" name="name" value="{{item.name}}" placeholder="{{localize 'STARWARSD6.Item.Equipment.Name'}}" />
+  </header>
+  <section class="sheet-body">
+    <div class="form-group">
+      <label>{{localize "STARWARSD6.Item.Equipment.Quantity"}}</label>
+      <input type="number" name="system.quantity" value="{{system.quantity}}" min="0" />
+    </div>
+    <div class="form-group">
+      <label>{{localize "STARWARSD6.Item.Equipment.Description"}}</label>
+      <textarea name="system.description" rows="4">{{system.description}}</textarea>
+    </div>
+  </section>
+</div>

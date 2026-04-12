@@ -70,6 +70,31 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
         dicePool: skill.system.dicePool,
         pips: skill.system.pips
       }));
+    context.weapons = this.document.items
+      .filter(i => i.type === "weapon")
+      .map(i => ({
+        id: i.id,
+        name: i.name,
+        damageDice: i.system.damageDice,
+        damagePips: i.system.damagePips,
+        attackSkill: i.system.attackSkill,
+        range: i.system.range
+      }));
+    context.armors = this.document.items
+      .filter(i => i.type === "armor")
+      .map(i => ({
+        id: i.id,
+        name: i.name,
+        armorBonus: i.system.armorBonus
+      }));
+    context.equipment = this.document.items
+      .filter(i => i.type === "equipment")
+      .map(i => ({
+        id: i.id,
+        name: i.name,
+        quantity: i.system.quantity,
+        description: i.system.description
+      }));
     return context;
   }
 

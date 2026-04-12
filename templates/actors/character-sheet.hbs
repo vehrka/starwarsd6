@@ -13,6 +13,10 @@
        data-action="tab" data-tab="skills" data-group="primary">
       {{localize "STARWARSD6.Tab.Skills"}}
     </a>
+    <a class="item {{#if (eq tabs.primary 'inventory')}}active{{/if}}"
+       data-action="tab" data-tab="inventory" data-group="primary">
+      {{localize "STARWARSD6.Tab.Inventory"}}
+    </a>
   </nav>
 
   {{!-- ATTRIBUTES TAB --}}
@@ -146,5 +150,81 @@
         </tbody>
       </table>
     {{/if}}
+  </section>
+
+  {{!-- INVENTORY TAB --}}
+  <section class="tab {{#if (eq tabs.primary 'inventory')}}active{{/if}}"
+           data-tab="inventory" data-group="primary">
+
+    <h3>{{localize "STARWARSD6.Inventory.Weapons"}}</h3>
+    {{#if weapons.length}}
+      <table class="inventory-table">
+        <thead>
+          <tr>
+            <th>{{localize "STARWARSD6.Skill.Name"}}</th>
+            <th>{{localize "STARWARSD6.Item.Weapon.Damage"}}</th>
+            <th>{{localize "STARWARSD6.Item.Weapon.AttackSkill"}}</th>
+            <th>{{localize "STARWARSD6.Item.Weapon.Range"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each weapons as |weapon|}}
+          <tr class="item-row" data-item-id="{{weapon.id}}">
+            <td>{{weapon.name}}</td>
+            <td>{{weapon.damageDice}}D{{#if weapon.damagePips}}+{{weapon.damagePips}}{{/if}}</td>
+            <td>{{weapon.attackSkill}}</td>
+            <td>{{weapon.range}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    {{else}}
+      <p class="no-items">{{localize "STARWARSD6.Inventory.Empty"}}</p>
+    {{/if}}
+
+    <h3>{{localize "STARWARSD6.Inventory.Armor"}}</h3>
+    {{#if armors.length}}
+      <table class="inventory-table">
+        <thead>
+          <tr>
+            <th>{{localize "STARWARSD6.Skill.Name"}}</th>
+            <th>{{localize "STARWARSD6.Item.Armor.ArmorBonus"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each armors as |armor|}}
+          <tr class="item-row" data-item-id="{{armor.id}}">
+            <td>{{armor.name}}</td>
+            <td>{{armor.armorBonus}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    {{else}}
+      <p class="no-items">{{localize "STARWARSD6.Inventory.Empty"}}</p>
+    {{/if}}
+
+    <h3>{{localize "STARWARSD6.Inventory.Equipment"}}</h3>
+    {{#if equipment.length}}
+      <table class="inventory-table">
+        <thead>
+          <tr>
+            <th>{{localize "STARWARSD6.Skill.Name"}}</th>
+            <th>{{localize "STARWARSD6.Item.Equipment.Quantity"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each equipment as |eq|}}
+          <tr class="item-row" data-item-id="{{eq.id}}">
+            <td>{{eq.name}}</td>
+            <td>{{eq.quantity}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    {{else}}
+      <p class="no-items">{{localize "STARWARSD6.Inventory.Empty"}}</p>
+    {{/if}}
+
   </section>
 </div>

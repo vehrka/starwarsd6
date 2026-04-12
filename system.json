@@ -18,7 +18,10 @@
       "character": {}
     },
     "Item": {
-      "skill": {}
+      "skill": {},
+      "weapon": {},
+      "armor": {},
+      "equipment": {}
     }
   },
   "languages": [

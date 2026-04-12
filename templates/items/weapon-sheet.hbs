@@ -1,0 +1,27 @@
+<div class="starwarsd6 sheet item weapon">
+  <header class="sheet-header">
+    <input type="text" name="name" value="{{item.name}}" placeholder="{{localize 'STARWARSD6.Item.Weapon.Name'}}" />
+  </header>
+  <section class="sheet-body">
+    <div class="form-group">
+      <label>{{localize "STARWARSD6.Item.Weapon.DamageDice"}}</label>
+      <input type="number" name="system.damageDice" value="{{system.damageDice}}" min="1" />
+    </div>
+    <div class="form-group">
+      <label>{{localize "STARWARSD6.Item.Weapon.DamagePips"}}</label>
+      <input type="number" name="system.damagePips" value="{{system.damagePips}}" min="0" max="2" />
+    </div>
+    <div class="form-group">
+      <label>{{localize "STARWARSD6.Item.Weapon.AttackSkill"}}</label>
+      <input type="text" name="system.attackSkill" value="{{system.attackSkill}}" />
+    </div>
+    <div class="form-group">
+      <label>{{localize "STARWARSD6.Item.Weapon.WeaponBonus"}}</label>
+      <input type="number" name="system.weaponBonus" value="{{system.weaponBonus}}" min="0" />
+    </div>
+    <div class="form-group">
+      <label>{{localize "STARWARSD6.Item.Weapon.Range"}}</label>
+      <input type="text" name="system.range" value="{{system.range}}" />
+    </div>
+  </section>
+</div>

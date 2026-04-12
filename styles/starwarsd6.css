@@ -107,3 +107,50 @@
   color: #888;
   font-style: italic;
 }
+
+/* Inventory tab */
+.starwarsd6.sheet .inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1em;
+}
+
+.starwarsd6.sheet .inventory-table th,
+.starwarsd6.sheet .inventory-table td {
+  border: 1px solid #ccc;
+  padding: 4px 8px;
+  text-align: left;
+}
+
+.starwarsd6.sheet .inventory-table th {
+  background: #2a2a2a;
+  color: #fff;
+}
+
+.starwarsd6.sheet .no-items {
+  color: #888;
+  font-style: italic;
+}
+
+/* Item sheet body */
+.starwarsd6.sheet.item .sheet-body {
+  padding: 8px;
+}
+
+.starwarsd6.sheet.item .sheet-body .form-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.starwarsd6.sheet.item .sheet-body .form-group label {
+  min-width: 120px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.starwarsd6.sheet.item .sheet-body textarea {
+  flex: 1;
+  resize: vertical;
+}
