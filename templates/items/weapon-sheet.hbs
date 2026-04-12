@@ -23,5 +23,9 @@
       <label>{{localize "STARWARSD6.Item.Weapon.Range"}}</label>
       <input type="text" name="system.range" value="{{system.range}}" />
     </div>
+    <div class="form-group">
+      <label>{{localize "STARWARSD6.Item.Equipped"}}</label>
+      <input type="checkbox" name="system.equipped" {{#if system.equipped}}checked{{/if}} />
+    </div>
   </section>
 </div>

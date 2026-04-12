@@ -7,5 +7,9 @@
       <label>{{localize "STARWARSD6.Item.Armor.ArmorBonus"}}</label>
       <input type="number" name="system.armorBonus" value="{{system.armorBonus}}" min="0" />
     </div>
+    <div class="form-group">
+      <label>{{localize "STARWARSD6.Item.Equipped"}}</label>
+      <input type="checkbox" name="system.equipped" {{#if system.equipped}}checked{{/if}} />
+    </div>
   </section>
 </div>

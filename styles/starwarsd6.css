@@ -132,6 +132,147 @@
   font-style: italic;
 }
 
+.starwarsd6.sheet .item-delete,
+.starwarsd6.sheet .equip-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.starwarsd6.sheet .item-delete {
+  color: #a00;
+}
+
+.starwarsd6.sheet .item-delete:hover {
+  color: #f00;
+}
+
+.starwarsd6.sheet .equip-toggle {
+  color: #888;
+  font-size: 1em;
+}
+
+.starwarsd6.sheet .equip-toggle.equipped {
+  color: #1a7a1a;
+  font-weight: bold;
+}
+
+/* Combat tab */
+.starwarsd6.sheet .combat-defense-table,
+.starwarsd6.sheet .combat-weapons-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1em;
+}
+
+.starwarsd6.sheet .combat-defense-table th,
+.starwarsd6.sheet .combat-defense-table td,
+.starwarsd6.sheet .combat-weapons-table th,
+.starwarsd6.sheet .combat-weapons-table td {
+  border: 1px solid #ccc;
+  padding: 4px 8px;
+  text-align: center;
+}
+
+.starwarsd6.sheet .combat-defense-table th,
+.starwarsd6.sheet .combat-weapons-table th {
+  background: #2a2a2a;
+  color: #fff;
+}
+
+.starwarsd6.sheet .defense-value {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.starwarsd6.sheet .combat-bonuses,
+.starwarsd6.sheet .combat-penalties {
+  display: flex;
+  gap: 1em;
+  margin-bottom: 0.75em;
+  flex-wrap: wrap;
+}
+
+.starwarsd6.sheet .combat-bonuses .form-group,
+.starwarsd6.sheet .combat-penalties .form-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.starwarsd6.sheet .combat-bonuses input[type="number"] {
+  width: 4em;
+  text-align: center;
+}
+
+/* Hit box tracker */
+.starwarsd6.sheet .hit-box-tracker {
+  margin-bottom: 1em;
+}
+
+.starwarsd6.sheet .hit-box-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.starwarsd6.sheet .tier-label {
+  min-width: 110px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.starwarsd6.sheet .hit-boxes {
+  display: flex;
+  gap: 4px;
+}
+
+.starwarsd6.sheet .hit-box {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #555;
+  background: #fff;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 2px;
+}
+
+.starwarsd6.sheet .hit-box.marked {
+  background: #c00;
+  border-color: #800;
+}
+
+.starwarsd6.sheet .hit-box-hint {
+  font-size: 0.75em;
+  color: #888;
+  font-style: italic;
+  margin: 2px 0 0.75em;
+}
+
+.starwarsd6.sheet .hit-box:hover {
+  border-color: #000;
+  opacity: 0.85;
+}
+
+/* Attack chat result */
+.starwarsd6.roll-result .roll-defense {
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.starwarsd6.roll-result .hit {
+  color: #0a0;
+  font-weight: bold;
+}
+
+.starwarsd6.roll-result .miss {
+  color: #c00;
+  font-weight: bold;
+}
+
 /* Item sheet body */
 .starwarsd6.sheet.item .sheet-body {
   padding: 8px;

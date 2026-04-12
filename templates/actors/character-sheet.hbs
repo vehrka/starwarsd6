@@ -17,6 +17,10 @@
        data-action="tab" data-tab="inventory" data-group="primary">
       {{localize "STARWARSD6.Tab.Inventory"}}
     </a>
+    <a class="item {{#if (eq tabs.primary 'combat')}}active{{/if}}"
+       data-action="tab" data-tab="combat" data-group="primary">
+      {{localize "STARWARSD6.Tab.Combat"}}
+    </a>
   </nav>
 
   {{!-- ATTRIBUTES TAB --}}
@@ -165,6 +169,8 @@
             <th>{{localize "STARWARSD6.Item.Weapon.Damage"}}</th>
             <th>{{localize "STARWARSD6.Item.Weapon.AttackSkill"}}</th>
             <th>{{localize "STARWARSD6.Item.Weapon.Range"}}</th>
+            <th>{{localize "STARWARSD6.Item.Equipped"}}</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -174,6 +180,8 @@
             <td>{{weapon.damageDice}}D{{#if weapon.damagePips}}+{{weapon.damagePips}}{{/if}}</td>
             <td>{{weapon.attackSkill}}</td>
             <td>{{weapon.range}}</td>
+            <td><button type="button" class="equip-toggle {{#if weapon.equipped}}equipped{{/if}}" data-action="toggleEquipped" data-item-id="{{weapon.id}}" title="{{localize 'STARWARSD6.Item.Equipped'}}">{{#if weapon.equipped}}✓{{else}}○{{/if}}</button></td>
+            <td><button type="button" class="item-delete" data-action="deleteItem" data-item-id="{{weapon.id}}" title="Delete">✕</button></td>
           </tr>
           {{/each}}
         </tbody>
@@ -189,6 +197,8 @@
           <tr>
             <th>{{localize "STARWARSD6.Skill.Name"}}</th>
             <th>{{localize "STARWARSD6.Item.Armor.ArmorBonus"}}</th>
+            <th>{{localize "STARWARSD6.Item.Equipped"}}</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -196,6 +206,8 @@
           <tr class="item-row" data-item-id="{{armor.id}}">
             <td>{{armor.name}}</td>
             <td>{{armor.armorBonus}}</td>
+            <td><button type="button" class="equip-toggle {{#if armor.equipped}}equipped{{/if}}" data-action="toggleEquipped" data-item-id="{{armor.id}}" title="{{localize 'STARWARSD6.Item.Equipped'}}">{{#if armor.equipped}}✓{{else}}○{{/if}}</button></td>
+            <td><button type="button" class="item-delete" data-action="deleteItem" data-item-id="{{armor.id}}" title="Delete">✕</button></td>
           </tr>
           {{/each}}
         </tbody>
@@ -211,6 +223,7 @@
           <tr>
             <th>{{localize "STARWARSD6.Skill.Name"}}</th>
             <th>{{localize "STARWARSD6.Item.Equipment.Quantity"}}</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -218,6 +231,148 @@
           <tr class="item-row" data-item-id="{{eq.id}}">
             <td>{{eq.name}}</td>
             <td>{{eq.quantity}}</td>
+            <td><button type="button" class="item-delete" data-action="deleteItem" data-item-id="{{eq.id}}" title="Delete">✕</button></td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    {{else}}
+      <p class="no-items">{{localize "STARWARSD6.Inventory.Empty"}}</p>
+    {{/if}}
+
+  </section>
+
+  {{!-- COMBAT TAB --}}
+  <section class="tab {{#if (eq tabs.primary 'combat')}}active{{/if}}"
+           data-tab="combat" data-group="primary">
+
+    {{!-- Defense Values --}}
+    <h3>{{localize "STARWARSD6.Combat.Defense"}}</h3>
+    <table class="combat-defense-table">
+      <thead>
+        <tr>
+          <th>{{localize "STARWARSD6.Combat.RangedDefense"}}</th>
+          <th>{{localize "STARWARSD6.Combat.MeleeDefense"}}</th>
+          <th>{{localize "STARWARSD6.Combat.BrawlingDefense"}}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="defense-value">{{combatData.rangedDefense}}</td>
+          <td class="defense-value">{{combatData.meleeDefense}}</td>
+          <td class="defense-value">{{combatData.brawlingDefense}}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    {{!-- Damage Thresholds --}}
+    <h3>{{localize "STARWARSD6.Combat.DamageThresholds"}}</h3>
+    <table class="combat-defense-table">
+      <thead>
+        <tr>
+          <th>{{localize "STARWARSD6.Combat.Stun"}}</th>
+          <th>{{localize "STARWARSD6.Combat.Wound"}}</th>
+          <th>{{localize "STARWARSD6.Combat.Incap"}}</th>
+          <th>{{localize "STARWARSD6.Combat.Mortal"}}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="defense-value">{{combatData.thresholdStun}}</td>
+          <td class="defense-value">{{combatData.thresholdWound}}</td>
+          <td class="defense-value">{{combatData.thresholdIncap}}</td>
+          <td class="defense-value">{{combatData.thresholdMortal}}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    {{!-- Wound Penalties --}}
+    <h3>{{localize "STARWARSD6.Combat.Penalties"}}</h3>
+    <div class="combat-penalties">
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.Combat.PenaltyDice"}}</label>
+        <span class="derived-value">{{combatData.penaltyDice}}</span>
+      </div>
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.Combat.PenaltyPips"}}</label>
+        <span class="derived-value">{{combatData.penaltyPips}}</span>
+      </div>
+    </div>
+
+    {{!-- Hit Boxes --}}
+    <h3>{{localize "STARWARSD6.Combat.HitBoxes"}}</h3>
+    <div class="hit-box-tracker">
+
+      <div class="hit-box-row">
+        <span class="tier-label">{{localize "STARWARSD6.Combat.Stun"}}</span>
+        <div class="hit-boxes">
+          {{#each combatData.stunBoxes as |box|}}
+          <button type="button" class="hit-box {{#if box.marked}}marked{{/if}}"
+                  data-action="markHitBox" data-tier="stun"
+                  title="{{localize "STARWARSD6.Combat.Stun"}}"></button>
+          {{/each}}
+        </div>
+      </div>
+
+      <div class="hit-box-row">
+        <span class="tier-label">{{localize "STARWARSD6.Combat.Wound"}}</span>
+        <div class="hit-boxes">
+          {{#each combatData.woundBoxes as |box|}}
+          <button type="button" class="hit-box {{#if box.marked}}marked{{/if}}"
+                  data-action="markHitBox" data-tier="wound"
+                  title="{{localize "STARWARSD6.Combat.Wound"}}"></button>
+          {{/each}}
+        </div>
+      </div>
+
+      <div class="hit-box-row">
+        <span class="tier-label">{{localize "STARWARSD6.Combat.Incap"}}</span>
+        <div class="hit-boxes">
+          {{#each combatData.incapBoxes as |box|}}
+          <button type="button" class="hit-box {{#if box.marked}}marked{{/if}}"
+                  data-action="markHitBox" data-tier="incap"
+                  title="{{localize "STARWARSD6.Combat.Incap"}}"></button>
+          {{/each}}
+        </div>
+      </div>
+
+      <div class="hit-box-row">
+        <span class="tier-label">{{localize "STARWARSD6.Combat.Mortal"}}</span>
+        <div class="hit-boxes">
+          {{#each combatData.mortalBoxes as |box|}}
+          <button type="button" class="hit-box {{#if box.marked}}marked{{/if}}"
+                  data-action="markHitBox" data-tier="mortal"
+                  title="{{localize "STARWARSD6.Combat.Mortal"}}"></button>
+          {{/each}}
+        </div>
+      </div>
+
+    </div>
+    <p class="hit-box-hint">{{localize "STARWARSD6.Combat.HitBoxHint"}}</p>
+
+    {{!-- Attack Rolls --}}
+    <h3>{{localize "STARWARSD6.Combat.Weapons"}}</h3>
+    {{#if combatData.weapons.length}}
+      <table class="combat-weapons-table">
+        <thead>
+          <tr>
+            <th>{{localize "STARWARSD6.Skill.Name"}}</th>
+            <th>{{localize "STARWARSD6.Item.Weapon.Damage"}}</th>
+            <th>{{localize "STARWARSD6.Item.Weapon.AttackSkill"}}</th>
+            <th>{{localize "STARWARSD6.Combat.AttackRoll"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each combatData.weapons as |weapon|}}
+          <tr>
+            <td>{{weapon.name}}</td>
+            <td>{{weapon.damageDice}}D{{#if weapon.damagePips}}+{{weapon.damagePips}}{{/if}}</td>
+            <td>{{weapon.attackSkill}}</td>
+            <td>
+              <button type="button" data-action="rollAttack" data-weapon-id="{{weapon.id}}">
+                {{localize "STARWARSD6.Combat.Roll"}}
+              </button>
+            </td>
           </tr>
           {{/each}}
         </tbody>

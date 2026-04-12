@@ -14,7 +14,7 @@
 | 1 ✓ | Skill Sheet & Data Expansion | All 38 skills editable, full attribute/skill data | M | 0 |
 | 2 ✓ | Dice Engine | Wild die rolls from sheet | M | 1 |
 | 3 ✓ | Item Types | Weapons, armor, equipment | M | 1 |
-| 4 | Combat & Damage | Defense values, damage thresholds, hit boxes | L | 2, 3 |
+| 4 ✓ | Combat & Damage | Defense values, damage thresholds, hit boxes | L | 2, 3 |
 | 5 | Character Points & Force Points | CP/FP spend on rolls | M | 2 |
 | 6 | NPC Actor | NPC DataModel and sheet | M | 4 |
 | 7 | Force System | Force skills, powers, DSP | L | 5 |

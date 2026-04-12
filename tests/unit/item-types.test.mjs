@@ -63,9 +63,9 @@ describe("ArmorData.defineSchema()", () => {
     expect(armorBonus.min).toBe(0);
   });
 
-  it("has exactly one field (no extra fields)", () => {
+  it("has exactly two fields (armorBonus and equipped)", () => {
     const s = schema(ArmorData);
-    expect(Object.keys(s)).toHaveLength(1);
+    expect(Object.keys(s)).toHaveLength(2);
   });
 });
 

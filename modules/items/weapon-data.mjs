@@ -1,4 +1,4 @@
-const { NumberField, StringField } = foundry.data.fields;
+const { NumberField, StringField, BooleanField } = foundry.data.fields;
 
 export default class WeaponData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
@@ -7,7 +7,8 @@ export default class WeaponData extends foundry.abstract.TypeDataModel {
       damagePips:  new NumberField({ required: true, nullable: false, integer: true, min: 0, max: 2, initial: 0 }),
       attackSkill: new StringField({ required: true, initial: "blaster", blank: false }),
       weaponBonus: new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
-      range:       new StringField({ required: true, initial: "short", blank: false })
+      range:       new StringField({ required: true, initial: "short", blank: false }),
+      equipped:    new BooleanField({ initial: false })
     };
   }
 }
