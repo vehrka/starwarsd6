@@ -1,0 +1,38 @@
+<div class="starwarsd6 sheet item skill">
+  <header class="sheet-header">
+    <input type="text" name="name" value="{{item.name}}" placeholder="Skill Name" />
+  </header>
+
+  <section class="sheet-body">
+    <div class="form-group">
+      <label>{{localize "STARWARSD6.Skill.IsForce"}}</label>
+      <input type="checkbox" name="system.isForce" {{#if system.isForce}}checked{{/if}} />
+    </div>
+
+    {{#if system.isForce}}
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.Skill.ForceDice"}}</label>
+        <input type="number" name="system.forceDice" value="{{system.forceDice}}" min="1" />
+      </div>
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.Skill.ForcePips"}}</label>
+        <input type="number" name="system.forcePips" value="{{system.forcePips}}" min="0" max="2" />
+      </div>
+    {{else}}
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.Skill.Attribute"}}</label>
+        <select name="system.attribute">
+          {{#each ATTRIBUTE_KEYS as |key|}}
+            <option value="{{key}}" {{#if (eq ../system.attribute key)}}selected{{/if}}>
+              {{localize (concat "STARWARSD6.Attribute." key)}}
+            </option>
+          {{/each}}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.Skill.Rank"}}</label>
+        <input type="number" name="system.rank" value="{{system.rank}}" min="0" />
+      </div>
+    {{/if}}
+  </section>
+</div>

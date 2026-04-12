@@ -1,4 +1,4 @@
-const { NumberField, SchemaField } = foundry.data.fields;
+const { NumberField, SchemaField, BooleanField } = foundry.data.fields;
 
 function attributeField() {
   return new SchemaField({
@@ -15,7 +15,16 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
       MEC: attributeField(),
       PER: attributeField(),
       STR: attributeField(),
-      TEC: attributeField()
+      TEC: attributeField(),
+      move: new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 10 }),
+      forceSensitive: new BooleanField({ initial: false }),
+      characterPoints: new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
+      forcePoints: new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
+      darkSidePoints: new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
+      stunMarks:   new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
+      woundMarks:  new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
+      incapMarks:  new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
+      mortalMarks: new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 })
     };
   }
 
@@ -24,5 +33,6 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
       const attr = this[key];
       attr.baseValue = Math.floor(3.5 * attr.dice) + attr.pips;
     }
+    this.hitBoxes = this.STR.dice;
   }
 }

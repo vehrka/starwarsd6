@@ -3,6 +3,7 @@ import CharacterActor from "./modules/actors/character.mjs";
 import SkillData from "./modules/items/skill-data.mjs";
 import SkillItem from "./modules/items/skill.mjs";
 import CharacterSheet from "./modules/apps/character-sheet.mjs";
+import SkillSheet from "./modules/apps/skill-sheet.mjs";
 
 Hooks.once("init", () => {
   CONFIG.Actor.documentClass = CharacterActor;
@@ -16,5 +17,12 @@ Hooks.once("init", () => {
     types: ["character"],
     makeDefault: true,
     label: "STARWARSD6.SheetClass.Character"
+  });
+
+  DocumentSheetConfig.unregisterSheet(Item, "core", foundry.appv1.sheets.ItemSheet);
+  DocumentSheetConfig.registerSheet(Item, "starwarsd6", SkillSheet, {
+    types: ["skill"],
+    makeDefault: true,
+    label: "STARWARSD6.SheetClass.Skill"
   });
 });

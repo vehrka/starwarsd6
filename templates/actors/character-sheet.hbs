@@ -3,15 +3,28 @@
     <input type="text" name="name" value="{{document.name}}" placeholder="Character Name" />
   </header>
 
-  <section class="sheet-body">
-    <h2>Attributes</h2>
+  {{!-- Tab navigation --}}
+  <nav class="sheet-tabs tabs" data-group="primary">
+    <a class="item {{#if (eq tabs.primary 'attributes')}}active{{/if}}"
+       data-action="tab" data-tab="attributes" data-group="primary">
+      {{localize "STARWARSD6.Tab.Attributes"}}
+    </a>
+    <a class="item {{#if (eq tabs.primary 'skills')}}active{{/if}}"
+       data-action="tab" data-tab="skills" data-group="primary">
+      {{localize "STARWARSD6.Tab.Skills"}}
+    </a>
+  </nav>
+
+  {{!-- ATTRIBUTES TAB --}}
+  <section class="tab {{#if (eq tabs.primary 'attributes')}}active{{/if}}"
+           data-tab="attributes" data-group="primary">
     <table class="attributes-table">
       <thead>
         <tr>
-          <th>Attribute</th>
-          <th>Dice</th>
-          <th>Pips</th>
-          <th>Base Value</th>
+          <th>{{localize "STARWARSD6.Attribute.Label"}}</th>
+          <th>{{localize "STARWARSD6.Attribute.Dice"}}</th>
+          <th>{{localize "STARWARSD6.Attribute.Pips"}}</th>
+          <th>{{localize "STARWARSD6.Attribute.BaseValue"}}</th>
         </tr>
       </thead>
       <tbody>
@@ -26,30 +39,100 @@
       </tbody>
     </table>
 
-    <h2>Skills</h2>
-    {{#if skills.length}}
-    <table class="skills-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Attribute</th>
-          <th>Rank</th>
-          <th>Dice Pool</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{#each skills as |skill|}}
-        <tr>
-          <td>{{skill.name}}</td>
-          <td>{{skill.system.attribute}}</td>
-          <td>{{skill.system.rank}}</td>
-          <td>{{skill.system.dicePool}}</td>
-        </tr>
-        {{/each}}
-      </tbody>
-    </table>
-    {{else}}
-    <p class="no-skills">No skills assigned.</p>
+    <div class="character-stats">
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.Attribute.Move"}}</label>
+        <input type="number" name="system.move" value="{{system.move}}" min="0" />
+      </div>
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.Character.HitBoxes"}}</label>
+        <span class="derived-value">{{system.hitBoxes}}</span>
+      </div>
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.Character.ForceSensitive"}}</label>
+        <input type="checkbox" name="system.forceSensitive" {{#if system.forceSensitive}}checked{{/if}} />
+      </div>
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.Character.CharacterPoints"}}</label>
+        <input type="number" name="system.characterPoints" value="{{system.characterPoints}}" min="0" />
+      </div>
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.Character.ForcePoints"}}</label>
+        <input type="number" name="system.forcePoints" value="{{system.forcePoints}}" min="0" />
+      </div>
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.Character.DarkSidePoints"}}</label>
+        <input type="number" name="system.darkSidePoints" value="{{system.darkSidePoints}}" min="0" />
+      </div>
+    </div>
+
+    <div class="wound-tracking">
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.Wound.StunMarks"}}</label>
+        <input type="number" name="system.stunMarks" value="{{system.stunMarks}}" min="0" />
+      </div>
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.Wound.WoundMarks"}}</label>
+        <input type="number" name="system.woundMarks" value="{{system.woundMarks}}" min="0" />
+      </div>
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.Wound.IncapMarks"}}</label>
+        <input type="number" name="system.incapMarks" value="{{system.incapMarks}}" min="0" />
+      </div>
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.Wound.MortalMarks"}}</label>
+        <input type="number" name="system.mortalMarks" value="{{system.mortalMarks}}" min="0" />
+      </div>
+    </div>
+  </section>
+
+  {{!-- SKILLS TAB --}}
+  <section class="tab {{#if (eq tabs.primary 'skills')}}active{{/if}}"
+           data-tab="skills" data-group="primary">
+    {{#each attributeGroups as |group|}}
+      <h3>{{localize group.label}}</h3>
+      {{#if group.skills.length}}
+        <table class="skills-table">
+          <thead>
+            <tr>
+              <th>{{localize "STARWARSD6.Skill.Name"}}</th>
+              <th>{{localize "STARWARSD6.Skill.Rank"}}</th>
+              <th>{{localize "STARWARSD6.Skill.DicePool"}}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each group.skills as |skill|}}
+            <tr class="item-row" data-item-id="{{skill.id}}">
+              <td>{{skill.name}}</td>
+              <td>{{skill.rank}}</td>
+              <td>{{skill.dicePool}}D{{#if skill.pips}}+{{skill.pips}}{{/if}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      {{else}}
+        <p class="no-skills">—</p>
+      {{/if}}
+    {{/each}}
+
+    {{#if forceSkills.length}}
+      <h3>{{localize "STARWARSD6.ForceSkills"}}</h3>
+      <table class="skills-table">
+        <thead>
+          <tr>
+            <th>{{localize "STARWARSD6.Skill.Name"}}</th>
+            <th>{{localize "STARWARSD6.Skill.DicePool"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each forceSkills as |skill|}}
+          <tr class="item-row" data-item-id="{{skill.id}}">
+            <td>{{skill.name}}</td>
+            <td>{{skill.dicePool}}D{{#if skill.pips}}+{{skill.pips}}{{/if}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
     {{/if}}
   </section>
 </div>
