@@ -1,0 +1,4 @@
+- [  ] No need for Force check on skills
+- [  ] Remove Skills from Character Sheet
+- [  ] Increase Rank without opening
+- [  ] When rolling, add a field for the difficulty

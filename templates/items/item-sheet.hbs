@@ -46,5 +46,44 @@
       </div>
     {{/if}}
 
+    {{#if (eq item.type "forcePower")}}
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.ForcePower.ControlDifficulty"}}</label>
+        <input type="text" name="system.controlDifficulty" value="{{system.controlDifficulty}}" />
+      </div>
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.ForcePower.SenseDifficulty"}}</label>
+        <input type="text" name="system.senseDifficulty" value="{{system.senseDifficulty}}" />
+      </div>
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.ForcePower.AlterDifficulty"}}</label>
+        <input type="text" name="system.alterDifficulty" value="{{system.alterDifficulty}}" />
+      </div>
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.ForcePower.RequiredPowers"}}</label>
+        <input type="text" name="system.requiredPowers" value="{{system.requiredPowers}}" />
+      </div>
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.ForcePower.CanKeepUp"}}</label>
+        <input type="checkbox" name="system.canKeepUp" {{#if system.canKeepUp}}checked{{/if}} />
+      </div>
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.ForcePower.KeptUp"}}</label>
+        <input type="checkbox" name="system.keptUp" {{#if system.keptUp}}checked{{/if}} />
+      </div>
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.ForcePower.DarkSideWarning"}}</label>
+        <input type="checkbox" name="system.darkSideWarning" {{#if system.darkSideWarning}}checked{{/if}} />
+      </div>
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.ForcePower.TimeToUse"}}</label>
+        <input type="text" name="system.timeToUse" value="{{system.timeToUse}}" />
+      </div>
+      <div class="form-group">
+        <label>{{localize "STARWARSD6.ForcePower.Effect"}}</label>
+        <textarea name="system.effect" rows="4">{{system.effect}}</textarea>
+      </div>
+    {{/if}}
+
   </section>
 </div>

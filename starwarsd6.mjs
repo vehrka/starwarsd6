@@ -7,6 +7,8 @@ import SkillItem from "./modules/items/skill.mjs";
 import WeaponData from "./modules/items/weapon-data.mjs";
 import ArmorData from "./modules/items/armor-data.mjs";
 import EquipmentData from "./modules/items/equipment-data.mjs";
+import ForcePowerData from "./modules/items/force-power-data.mjs";
+import ForcePowerItem from "./modules/items/force-power.mjs";
 import CharacterSheet from "./modules/apps/character-sheet.mjs";
 import NpcSheet from "./modules/apps/npc-sheet.mjs";
 import SkillSheet from "./modules/apps/skill-sheet.mjs";
@@ -21,7 +23,8 @@ Hooks.once("init", () => {
     skill: SkillData,
     weapon: WeaponData,
     armor: ArmorData,
-    equipment: EquipmentData
+    equipment: EquipmentData,
+    forcePower: ForcePowerData
   };
 
   const DocumentSheetConfig = foundry.applications.apps.DocumentSheetConfig;
@@ -45,7 +48,7 @@ Hooks.once("init", () => {
     label: "STARWARSD6.SheetClass.Skill"
   });
   DocumentSheetConfig.registerSheet(Item, "starwarsd6", ItemSheet, {
-    types: ["weapon", "armor", "equipment"],
+    types: ["weapon", "armor", "equipment", "forcePower"],
     makeDefault: true,
     label: "STARWARSD6.SheetClass.Item"
   });

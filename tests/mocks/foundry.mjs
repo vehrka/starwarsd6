@@ -9,7 +9,8 @@ export const foundryMock = {
       NumberField: FieldStub,
       StringField: FieldStub,
       BooleanField: FieldStub,
-      SchemaField: FieldStub
+      SchemaField: FieldStub,
+      ArrayField: FieldStub
     }
   },
   abstract: {

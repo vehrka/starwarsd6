@@ -1,7 +1,7 @@
 # Star Wars D6 FoundryVTT — Implementation Plan
 
 **System:** FoundryVTT v13, plain ESM JavaScript, no build step  
-**Current state:** phases 0–6 completed
+**Current state:** phases 0–7 completed
 **Architecture:** ApplicationV2 + HandlebarsApplicationMixin, DataModels, KISS/YAGNI
 
 ---
@@ -17,7 +17,8 @@
 | 4 ✓ | Combat & Damage | Defense values, damage thresholds, hit boxes | L | 2, 3 |
 | 5 ✓ | Character Points & Force Points | CP/FP spend on rolls | M | 2 |
 | 6 ✓ | NPC Actor | NPC DataModel and sheet | M | 4 |
-| 7 | Force System | Force skills, powers, DSP | L | 5 |
+| 7 ✓ | Force System | Force skills, DSP, keep-up | L | 5 |
+| 7.5 ✓ | Force Powers Item | forcePower item type, keep-up drives penalty | M | 7 |
 | 8 | Targeted Combat Resolution | Auto-resolve attack vs. target defense; damage roll → hit box suggestion | M | 4, 6 |
 | 9 | Sheet Polish | Tabs, CSS, localization | M | 4 |
 
@@ -330,7 +331,7 @@ Derive `hitBoxes = STR.dice` and damage thresholds from `calculateDamageThreshol
 // 3. Roll 1d6; if total < newDsp → post chat warning "Character consumed by dark side"
 ```
 
-**Force power activation:** Powers are free-text entries, not coded items. `RollDialog` adds a "Force difficulty modifier" input (+0 to +30) for relationship/proximity. Multi-skill powers: user declares each skill roll as separate actions (normal multiple-action penalty applies). "Keep up" count (`keptUpPowers.length`) adds to action count for all rolls.
+**Force power activation:** Powers are structured `forcePower` items (feat012) with control/sense/alter difficulty, keep-up toggle, and dark-side warning fields. The `keepUpPenalty` is derived from owned `forcePower` items where `canKeepUp && keptUp`. `RollDialog` adds a "Force difficulty modifier" input (+0 to +30) for relationship/proximity. Multi-skill powers: user declares each skill roll as separate actions (normal multiple-action penalty applies).
 
 **Testing:** Force-sensitive character, control 2D. DSP=3 → roll shows control+3D bonus. "Add DSP" rolls conversion check in chat. Keep up 2 powers → action penalty of 2 on all rolls.
 
@@ -437,7 +438,6 @@ Phase 9 (polish) — final cleanup, no hard dependencies
 - Vehicle / starship actor type
 - Active Effects (no modifier stacking in D6)
 - Healing rolls on the sheet (medicine/first aid are healer-to-patient; manual Shift+Alt+click is sufficient)
-- Force power catalogue as coded items (free-text on sheet is sufficient)
 
 ---
 
@@ -446,9 +446,10 @@ Phase 9 (polish) — final cleanup, no hard dependencies
 | File | Modified in phases |
 |------|--------------------|
 | `modules/apps/character-sheet.mjs` | 0, 1, 2, 4, 5, 7, 8, 9 |
-| `modules/actors/character-data.mjs` | 1, 4, 5, 7 |
+| `modules/actors/character-data.mjs` | 1, 4, 5, 7, 7.5 |
 | `starwarsd6.mjs` | 1, 3, 6, 8 |
-| `system.json` | 3 (items), 6 (npc) |
+| `system.json` | 3 (items), 6 (npc), 7.5 |
+| `modules/items/force-power-data.mjs` | 7.5 (new) |
 | `modules/helpers/dice.mjs` | 2, 5 |
 | `modules/helpers/damage.mjs` | 4, 6, 8 |
 | `modules/helpers/socket.mjs` | 8 (new) |

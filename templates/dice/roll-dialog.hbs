@@ -12,6 +12,12 @@
     </label>
   </div>
   {{/if}}
+  {{#if isForceRoll}}
+  <div class="form-group">
+    <label>{{localize "STARWARSD6.Force.DifficultyModifier"}}</label>
+    <input type="number" name="forceDifficultyModifier" value="0" min="0" max="30" />
+  </div>
+  {{/if}}
   <footer class="sheet-footer form-footer">
     <button type="submit" class="default">
       <i class="fas fa-dice"></i>

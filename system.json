@@ -22,7 +22,8 @@
       "skill": {},
       "weapon": {},
       "armor": {},
-      "equipment": {}
+      "equipment": {},
+      "forcePower": {}
     }
   },
   "languages": [

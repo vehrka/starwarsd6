@@ -16,7 +16,7 @@ A fully playable Star Wars D6 system for Foundry VTT v13, covering:
 - Healing rolls (stamina and medicine) with tier-priority enforcement
 - Polished tabbed sheets, full localization, styled chat cards
 
-**Out of scope:** compendium packs, vehicle actors, Active Effects, token automation, coded Force power catalogue.
+**Out of scope:** compendium packs, vehicle actors, Active Effects, token automation.
 
 ---
 
@@ -31,9 +31,10 @@ Implementation follows a phased plan in `doc/implementation-plan.md`.
 | 2 | Dice Engine (wild die, roll dialog, chat) | ✅ Done |
 | 3 | Item Types (weapon, armor, equipment) | ✅ Done |
 | 4 | Combat & Damage (defense, thresholds, hit boxes) | ✅ Done |
-| 5 | Character Points & Force Points | ⬜ Pending |
-| 6 | NPC Actor | ⬜ Pending |
-| 7 | Force System | ⬜ Pending |
+| 5 | Character Points & Force Points | ✅ Done |
+| 6 | NPC Actor | ✅ Done |
+| 7 | Force System | ✅ Done |
+| 7.5 | Force Powers Item Type | ✅ Done |
 | 8 | Healing | ⬜ Pending |
 | 9 | Sheet Polish, CSS, Full Localization | ⬜ Pending |
 

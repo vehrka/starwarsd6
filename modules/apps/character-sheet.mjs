@@ -1,5 +1,6 @@
 import { rollWithWildDie } from "../helpers/dice.mjs";
 import { applyDamage, removeOneMark } from "../helpers/damage.mjs";
+import { applyDarkSidePoint } from "../helpers/force.mjs";
 import RollDialog from "./roll-dialog.mjs";
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -16,9 +17,14 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
       rollSkill: CharacterSheet.#rollSkill,
       rollAttribute: CharacterSheet.#rollAttribute,
       rollAttack: CharacterSheet.#rollAttack,
+      rollForceSkill: CharacterSheet.#rollForceSkill,
+      addDarkSidePoint: CharacterSheet.#addDarkSidePoint,
+      addKeptUpPower: CharacterSheet.#addKeptUpPower,
+      removeKeptUpPower: CharacterSheet.#removeKeptUpPower,
       markHitBox: CharacterSheet.#markHitBox,
       deleteItem: CharacterSheet.#deleteItem,
       toggleEquipped: CharacterSheet.#toggleEquipped,
+      toggleKeptUp: CharacterSheet.#toggleKeptUp,
       newRound: CharacterSheet.#newRound
     }
   };
@@ -104,6 +110,35 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
         description: i.system.description
       }));
 
+    // Force tab data (only when force sensitive)
+    const system = this.document.system;
+    context.forceData = system.forceSensitive ? {
+      skills: {
+        control: { ...system.forceSkills.control, key: "control", label: game.i18n.localize("STARWARSD6.Force.Skill.control") },
+        sense:   { ...system.forceSkills.sense,   key: "sense",   label: game.i18n.localize("STARWARSD6.Force.Skill.sense") },
+        alter:   { ...system.forceSkills.alter,   key: "alter",   label: game.i18n.localize("STARWARSD6.Force.Skill.alter") }
+      },
+      forcePowers: this.document.items
+        .filter(i => i.type === "forcePower")
+        .map(i => ({
+          id: i.id,
+          name: i.name,
+          controlDifficulty: i.system.controlDifficulty,
+          senseDifficulty:   i.system.senseDifficulty,
+          alterDifficulty:   i.system.alterDifficulty,
+          canKeepUp:         i.system.canKeepUp,
+          keptUp:            i.system.keptUp,
+          darkSideWarning:   i.system.darkSideWarning
+        })),
+      keptUpPowerItems: this.document.items
+        .filter(i => i.type === "forcePower" && i.system.canKeepUp && i.system.keptUp)
+        .map(i => ({ id: i.id, name: i.name })),
+      keptUpPowers: system.keptUpPowers.map((name, index) => ({ name, index })),
+      dsp: system.darkSidePoints,
+      forceRollBonus: system.forceRollBonus,
+      keepUpPenalty: system.keepUpPenalty
+    } : null;
+
     // Combat tab data
     const sys = this.document.system;
     const hitBoxes = sys.hitBoxes;
@@ -156,19 +191,23 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
       await this.document.setFlag("starwarsd6", "fpSpentThisRound", true);
     }
 
-    const penalty = numActions - 1;
+    const keepUpPenalty = this.document.system.keepUpPenalty ?? 0;
+    const penaltyDice = this.document.system.penaltyDice;
+    const penaltyPips = this.document.system.penaltyPips;
+    const penalty = (numActions - 1) + keepUpPenalty + penaltyDice;
     const rollResult = await rollWithWildDie(
       skill.system.dicePool, skill.system.pips, penalty,
       undefined,
       { doubled: useForcePoint }
     );
+    rollResult.total = Math.max(0, rollResult.total - penaltyPips);
 
     const cpNow = this.document.system.characterPoints;
     const fpSpentNow = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
 
     await CharacterSheet.#postRollToChat(
       this.document, skill.name, rollResult, numActions,
-      { cpAvailable: cpNow, fpSpentThisRound: fpSpentNow }
+      { cpAvailable: cpNow, fpSpentThisRound: fpSpentNow, keepUpPenalty, penaltyDice, penaltyPips }
     );
   }
 
@@ -195,17 +234,40 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
       await this.document.setFlag("starwarsd6", "fpSpentThisRound", true);
     }
 
-    const penalty = numActions - 1;
+    const keepUpPenalty = this.document.system.keepUpPenalty ?? 0;
+    const penaltyDice = this.document.system.penaltyDice;
+    const penaltyPips = this.document.system.penaltyPips;
+    const penalty = (numActions - 1) + keepUpPenalty + penaltyDice;
     const attrLabel = game.i18n.localize(`STARWARSD6.Attribute.${attributeKey}`);
     const rollResult = await rollWithWildDie(attr.dice, attr.pips, penalty, undefined, { doubled: useForcePoint });
+    rollResult.total = Math.max(0, rollResult.total - penaltyPips);
 
     const cpNow = this.document.system.characterPoints;
     const fpSpentNow = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
 
     await CharacterSheet.#postRollToChat(
       this.document, attrLabel, rollResult, numActions,
-      { cpAvailable: cpNow, fpSpentThisRound: fpSpentNow }
+      { cpAvailable: cpNow, fpSpentThisRound: fpSpentNow, keepUpPenalty, penaltyDice, penaltyPips }
     );
+  }
+
+  /**
+   * Build penalty lines for the chat card body.
+   * Returns an HTML string with one line per active penalty source, or "" if none.
+   * @param {number} numActions
+   * @param {number} keepUpPenalty
+   * @param {number} [penaltyDice=0]
+   * @param {number} [penaltyPips=0]
+   * @returns {string}
+   */
+  static #buildPenaltyLines(numActions, keepUpPenalty, penaltyDice = 0, penaltyPips = 0) {
+    const lines = [];
+    if (numActions > 1)     lines.push(`${game.i18n.localize("STARWARSD6.Roll.Actions")}: ${numActions} (−${numActions - 1}D)`);
+    if (keepUpPenalty > 0)  lines.push(`${game.i18n.localize("STARWARSD6.Force.KeepUpPenaltyNote")}: −${keepUpPenalty}D`);
+    if (penaltyDice > 0)    lines.push(`${game.i18n.localize("STARWARSD6.Combat.PenaltyDice")}: −${penaltyDice}D`);
+    if (penaltyPips > 0)    lines.push(`${game.i18n.localize("STARWARSD6.Combat.PenaltyPips")}: −${penaltyPips}`);
+    if (!lines.length) return "";
+    return `<div class="roll-penalties">${lines.join(" · ")}</div>`;
   }
 
   /**
@@ -217,13 +279,11 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
    * @param {object} [cpOptions={}]
    * @param {number} [cpOptions.cpAvailable=0]
    * @param {boolean} [cpOptions.fpSpentThisRound=false]
+   * @param {number} [cpOptions.keepUpPenalty=0]
    */
-  static async #postRollToChat(actor, label, result, numActions, { cpAvailable = 0, fpSpentThisRound = false } = {}) {
+  static async #postRollToChat(actor, label, result, numActions, { cpAvailable = 0, fpSpentThisRound = false, keepUpPenalty = 0, penaltyDice = 0, penaltyPips = 0 } = {}) {
     const speaker = ChatMessage.getSpeaker({ actor });
     const effectiveDice = result.normalDice.length + 1; // normal + wild
-    const penaltyNote = numActions > 1
-      ? ` (${numActions} ${game.i18n.localize("STARWARSD6.Roll.Actions")}, −${numActions - 1}D)`
-      : "";
 
     // Build wild die display
     const wildStr = result.wildRolls.length > 1
@@ -241,6 +301,8 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
       ? `Normal: [${result.normalDice.join(", ")}] | ` : "";
     const pipsStr = result.pips > 0 ? ` +${result.pips} pips` : "";
 
+    const penaltyStr = CharacterSheet.#buildPenaltyLines(numActions, keepUpPenalty, penaltyDice, penaltyPips);
+
     const cpDisabled = (cpAvailable <= 0 || fpSpentThisRound) ? " disabled" : "";
     const cpLabel = game.i18n.localize("STARWARSD6.CP.SpendCP");
     const cpCountLabel = cpAvailable > 0
@@ -256,8 +318,9 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     const content = `
       <div class="starwarsd6 roll-result">
-        <h3>${label}${penaltyNote}</h3>
+        <h3>${label}</h3>
         <div class="roll-formula">${effectiveDice}D${pipsStr}</div>
+        ${penaltyStr}
         <div class="roll-dice">${normalStr}Wild: ${wildStr}${explosion}${complications}</div>
         <div class="roll-total"><strong>${game.i18n.localize("STARWARSD6.Roll.Total")}: <span class="total-value">${result.total}</span></strong></div>
         ${cpButton}
@@ -309,7 +372,8 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     const penaltyDice = this.document.system.penaltyDice;
     const penaltyPips = this.document.system.penaltyPips;
-    const totalPenalty = penaltyDice + (numActions - 1);
+    const keepUpPenalty = this.document.system.keepUpPenalty ?? 0;
+    const totalPenalty = penaltyDice + (numActions - 1) + keepUpPenalty;
 
     const rollResult = await rollWithWildDie(skillDice, skillPips, totalPenalty, undefined, { doubled: useForcePoint });
     rollResult.total = Math.max(0, rollResult.total - penaltyPips);
@@ -334,7 +398,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     await CharacterSheet.#postAttackToChat(
       this.document, weapon.name, rollResult, numActions, defenseLabel, defenseValue,
-      { cpAvailable: cpNow, fpSpentThisRound: fpSpentNow }
+      { cpAvailable: cpNow, fpSpentThisRound: fpSpentNow, keepUpPenalty, penaltyDice, penaltyPips }
     );
   }
 
@@ -393,6 +457,19 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
   }
 
   /**
+   * Toggle the keptUp state of a forcePower item.
+   * @this {CharacterSheet}
+   * @param {PointerEvent} event
+   * @param {HTMLElement} target  Element with data-action="toggleKeptUp" data-item-id="..."
+   */
+  static async #toggleKeptUp(event, target) {
+    const itemId = target.closest("[data-item-id]").dataset.itemId;
+    const item = this.document.items.get(itemId);
+    if (!item) return;
+    await item.update({ "system.keptUp": !item.system.keptUp });
+  }
+
+  /**
    * Post an attack roll result to chat, showing roll total vs. defense value.
    * @param {Actor} actor
    * @param {string} weaponName
@@ -404,12 +481,9 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
    * @param {number} [cpOptions.cpAvailable=0]
    * @param {boolean} [cpOptions.fpSpentThisRound=false]
    */
-  static async #postAttackToChat(actor, weaponName, result, numActions, defenseLabel, defenseValue, { cpAvailable = 0, fpSpentThisRound = false } = {}) {
+  static async #postAttackToChat(actor, weaponName, result, numActions, defenseLabel, defenseValue, { cpAvailable = 0, fpSpentThisRound = false, keepUpPenalty = 0, penaltyDice = 0, penaltyPips = 0 } = {}) {
     const speaker = ChatMessage.getSpeaker({ actor });
     const effectiveDice = result.normalDice.length + 1;
-    const penaltyNote = numActions > 1
-      ? ` (${numActions} ${game.i18n.localize("STARWARSD6.Roll.Actions")}, −${numActions - 1}D)`
-      : "";
 
     const wildStr = result.wildRolls.length > 1
       ? result.wildRolls.map((v, i) => i === 0 ? `<b>${v}</b>` : `→${v}`).join(" ")
@@ -425,6 +499,8 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     const normalStr = result.normalDice.length > 0
       ? `Normal: [${result.normalDice.join(", ")}] | ` : "";
     const pipsStr = result.pips > 0 ? ` +${result.pips} pips` : "";
+
+    const penaltyStr = CharacterSheet.#buildPenaltyLines(numActions, keepUpPenalty, penaltyDice, penaltyPips);
 
     const hit = result.total >= defenseValue
       ? `<span class="hit">${game.i18n.localize("STARWARSD6.Combat.Hit")}</span>`
@@ -445,8 +521,9 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     const content = `
       <div class="starwarsd6 roll-result">
-        <h3>${game.i18n.localize("STARWARSD6.Combat.AttackRoll")}: ${weaponName}${penaltyNote}</h3>
+        <h3>${game.i18n.localize("STARWARSD6.Combat.AttackRoll")}: ${weaponName}</h3>
         <div class="roll-formula">${effectiveDice}D${pipsStr}</div>
+        ${penaltyStr}
         <div class="roll-dice">${normalStr}Wild: ${wildStr}${explosion}${complications}</div>
         <div class="roll-total"><strong>${game.i18n.localize("STARWARSD6.Roll.Total")}: <span class="total-value">${result.total}</span></strong></div>
         <div class="roll-defense">${defenseLabel}: ${defenseValue} — ${hit}</div>
@@ -462,5 +539,150 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
    */
   static async #newRound(event, target) {
     await this.document.unsetFlag("starwarsd6", "fpSpentThisRound");
+  }
+
+  /**
+   * Roll a Force skill (control/sense/alter) with DSP bonus, wound penalty, and keep-up penalty.
+   * @this {CharacterSheet}
+   * @param {PointerEvent} event
+   * @param {HTMLElement} target  Element with data-action="rollForceSkill" data-skill-key="..."
+   */
+  static async #rollForceSkill(event, target) {
+    const skillKey = target.dataset.skillKey;
+    const system = this.document.system;
+    if (!system.forceSensitive) return;
+    const skill = system.forceSkills[skillKey];
+    if (!skill) return;
+
+    const bonus = system.forceRollBonus;
+    const totalDice = skill.dice + bonus.bonusDice;
+    const totalPips = skill.pips + bonus.bonusPips; // may exceed 2, OK
+
+    const fp = system.forcePoints;
+    const fpSpent = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
+    const result = await RollDialog.prompt({ canSpendFP: !fpSpent, hasFP: fp > 0, isForceRoll: true });
+    if (result === null) return;
+
+    const { numActions, useForcePoint, forceDifficultyModifier } = result;
+
+    if (useForcePoint) {
+      await this.document.update({ "system.forcePoints": Math.max(0, fp - 1) });
+      await this.document.setFlag("starwarsd6", "fpSpentThisRound", true);
+    }
+
+    const keepUpPenalty = system.keepUpPenalty ?? 0;
+    const penalty = (numActions - 1) + keepUpPenalty + system.penaltyDice;
+    const rollResult = await rollWithWildDie(totalDice, totalPips, penalty, undefined, { doubled: useForcePoint });
+    rollResult.total = Math.max(0, rollResult.total - system.penaltyPips);
+
+    const cpNow = this.document.system.characterPoints;
+    const fpSpentNow = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
+
+    const label = game.i18n.localize(`STARWARSD6.Force.Skill.${skillKey}`);
+    await CharacterSheet.#postForceRollToChat(
+      this.document, label, rollResult, numActions, keepUpPenalty,
+      bonus, forceDifficultyModifier,
+      { cpAvailable: cpNow, fpSpentThisRound: fpSpentNow, penaltyDice: system.penaltyDice, penaltyPips: system.penaltyPips }
+    );
+  }
+
+  /**
+   * Post a Force skill roll result to chat.
+   * @param {Actor} actor
+   * @param {string} label
+   * @param {RollResult} result
+   * @param {number} numActions
+   * @param {number} keepUpPenalty
+   * @param {{ bonusDice: number, bonusPips: number }} bonus
+   * @param {number} forceDifficultyModifier
+   * @param {object} [cpOptions={}]
+   */
+  static async #postForceRollToChat(actor, label, result, numActions, keepUpPenalty, bonus, forceDifficultyModifier, { cpAvailable = 0, fpSpentThisRound = false, penaltyDice = 0, penaltyPips = 0 } = {}) {
+    const speaker = ChatMessage.getSpeaker({ actor });
+    const effectiveDice = result.normalDice.length + 1;
+
+    const wildStr = result.wildRolls.length > 1
+      ? result.wildRolls.map((v, i) => i === 0 ? `<b>${v}</b>` : `→${v}`).join(" ")
+      : `<b>${result.wildRolls[0]}</b>`;
+
+    const complications = result.isComplication
+      ? `<span class="complication"> &#9888; ${game.i18n.localize("STARWARSD6.Roll.Complication")}</span>`
+      : "";
+    const explosion = result.wildRolls.length > 1
+      ? `<span class="explosion"> &#128165; ${game.i18n.localize("STARWARSD6.Roll.Explosion")}</span>`
+      : "";
+
+    const normalStr = result.normalDice.length > 0
+      ? `Normal: [${result.normalDice.join(", ")}] | ` : "";
+    const pipsStr = result.pips > 0 ? ` +${result.pips} pips` : "";
+
+    const bonusStr = (bonus.bonusDice > 0 || bonus.bonusPips > 0)
+      ? `<div class="force-bonus">${game.i18n.localize("STARWARSD6.Force.ChatDSPBonus")}: +${bonus.bonusDice}D+${bonus.bonusPips}</div>`
+      : "";
+    const diffModStr = forceDifficultyModifier > 0
+      ? `<div class="force-diff-mod">${game.i18n.localize("STARWARSD6.Force.ChatDiffModifier")}: +${forceDifficultyModifier}</div>`
+      : "";
+    const penaltyStr = CharacterSheet.#buildPenaltyLines(numActions, keepUpPenalty, penaltyDice, penaltyPips);
+
+    const cpDisabled = (cpAvailable <= 0 || fpSpentThisRound) ? " disabled" : "";
+    const cpLabel = game.i18n.localize("STARWARSD6.CP.SpendCP");
+    const cpCountLabel = cpAvailable > 0
+      ? ` (${cpAvailable} ${game.i18n.localize("STARWARSD6.Character.CharacterPoints")})`
+      : "";
+    const cpButton = `
+      <div class="cp-action">
+        <button type="button" class="spend-cp-btn" data-actor-id="${actor.id}"
+                data-roll-total="${result.total}"${cpDisabled}>
+          ${cpLabel}${cpCountLabel}
+        </button>
+      </div>`;
+
+    const content = `
+      <div class="starwarsd6 roll-result">
+        <h3>${label}</h3>
+        <div class="roll-formula">${effectiveDice}D${pipsStr}</div>
+        ${bonusStr}
+        ${diffModStr}
+        ${penaltyStr}
+        <div class="roll-dice">${normalStr}Wild: ${wildStr}${explosion}${complications}</div>
+        <div class="roll-total"><strong>${game.i18n.localize("STARWARSD6.Roll.Total")}: <span class="total-value">${result.total}</span></strong></div>
+        ${cpButton}
+      </div>`;
+
+    await ChatMessage.create({ speaker, content });
+  }
+
+  /**
+   * Increment dark side points and trigger the conversion check.
+   * @this {CharacterSheet}
+   */
+  static async #addDarkSidePoint(event, target) {
+    await applyDarkSidePoint(this.document);
+  }
+
+  /**
+   * Add a kept-up power from the text input.
+   * @this {CharacterSheet}
+   */
+  static async #addKeptUpPower(event, target) {
+    const input = this.element.querySelector(".kept-up-power-input");
+    if (!input) return;
+    const name = input.value.trim();
+    if (!name) return;
+    const current = this.document.system.keptUpPowers;
+    await this.document.update({ "system.keptUpPowers": [...current, name] });
+    input.value = "";
+  }
+
+  /**
+   * Remove a kept-up power by index.
+   * @this {CharacterSheet}
+   */
+  static async #removeKeptUpPower(event, target) {
+    const index = parseInt(target.dataset.powerIndex);
+    const current = this.document.system.keptUpPowers;
+    await this.document.update({
+      "system.keptUpPowers": current.filter((_, i) => i !== index)
+    });
   }
 }

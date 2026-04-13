@@ -1,7 +1,8 @@
 import { calculateRangedDefense, calculateMeleeDefense, calculateBrawlingDefense } from "../helpers/defense.mjs";
 import { calculateDamageThresholds } from "../helpers/damage.mjs";
+import { calculateForceDiceBonus } from "../helpers/force.mjs";
 
-const { NumberField, SchemaField, BooleanField } = foundry.data.fields;
+const { NumberField, SchemaField, BooleanField, StringField, ArrayField } = foundry.data.fields;
 
 function attributeField() {
   return new SchemaField({
@@ -24,6 +25,21 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
       characterPoints: new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
       forcePoints: new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
       darkSidePoints: new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
+      forceSkills: new SchemaField({
+        control: new SchemaField({
+          dice: new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
+          pips: new NumberField({ required: true, nullable: false, integer: true, min: 0, max: 2, initial: 0 })
+        }),
+        sense: new SchemaField({
+          dice: new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
+          pips: new NumberField({ required: true, nullable: false, integer: true, min: 0, max: 2, initial: 0 })
+        }),
+        alter: new SchemaField({
+          dice: new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
+          pips: new NumberField({ required: true, nullable: false, integer: true, min: 0, max: 2, initial: 0 })
+        })
+      }),
+      keptUpPowers: new ArrayField(new StringField({ required: true, nullable: false, initial: "" })),
       stunMarks:   new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
       woundMarks:  new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
       incapMarks:  new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
@@ -44,6 +60,9 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
     this.penaltyDice = this.woundMarks * 1 + this.incapMarks * 2 + this.mortalMarks * 3;
     this.penaltyPips = this.stunMarks * 1;
 
+    // Force derived values
+    this.forceRollBonus = calculateForceDiceBonus(this.darkSidePoints);
+
     // Defense values — require actor context (this.parent is the Actor document)
     if (this.parent) {
       // Derive bonuses from equipped items — must run before defense calculations
@@ -53,12 +72,16 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
       this.weaponBonus = this.parent.items
         .filter(i => i.type === "weapon" && i.system.equipped)
         .reduce((sum, i) => sum + i.system.weaponBonus, 0);
+      this.keepUpPenalty = this.parent.items
+        .filter(i => i.type === "forcePower" && i.system.canKeepUp && i.system.keptUp)
+        .length;
       this.rangedDefense   = calculateRangedDefense(this.parent);
       this.meleeDefense    = calculateMeleeDefense(this.parent);
       this.brawlingDefense = calculateBrawlingDefense(this.parent);
     } else {
       this.armorBonus      = 0;
       this.weaponBonus     = 0;
+      this.keepUpPenalty   = 0;
       this.rangedDefense   = 0;
       this.meleeDefense    = 0;
       this.brawlingDefense = 0;

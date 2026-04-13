@@ -12,9 +12,30 @@ function makeCharacterData(overrides = {}) {
   instance.PER = { dice: 2, pips: 0 };
   instance.STR = { dice: 2, pips: 0 };
   instance.TEC = { dice: 2, pips: 0 };
+  // Wound marks (needed by prepareDerivedData for penaltyDice/penaltyPips)
+  instance.stunMarks  = 0;
+  instance.woundMarks = 0;
+  instance.incapMarks = 0;
+  instance.mortalMarks = 0;
+  // Force fields
+  instance.forceSensitive = false;
+  instance.darkSidePoints = 0;
+  instance.forceSkills = {
+    control: { dice: 0, pips: 0 },
+    sense:   { dice: 0, pips: 0 },
+    alter:   { dice: 0, pips: 0 }
+  };
+  instance.keptUpPowers = [];
   // Apply overrides
   Object.assign(instance, overrides);
   return instance;
+}
+
+// Build a mock parent actor for tests that exercise the if(this.parent) branch.
+// data must be the CharacterData instance so actor.system points back to it
+// (matching Foundry's real structure where actor.system === the DataModel).
+function makeMockParent(data, items) {
+  return { system: data, items };
 }
 
 describe("CharacterData.prepareDerivedData()", () => {
@@ -71,6 +92,63 @@ describe("CharacterData.prepareDerivedData()", () => {
       const data = makeCharacterData({ STR: { dice: 5, pips: 1 } });
       data.prepareDerivedData();
       expect(data.hitBoxes).toBe(5);
+    });
+  });
+
+  describe("forceRollBonus derivation", () => {
+    it("darkSidePoints=0 → forceRollBonus = { bonusDice:0, bonusPips:0 }", () => {
+      const data = makeCharacterData({ darkSidePoints: 0 });
+      data.prepareDerivedData();
+      expect(data.forceRollBonus).toEqual({ bonusDice: 0, bonusPips: 0 });
+    });
+
+    it("darkSidePoints=2 → forceRollBonus = { bonusDice:1, bonusPips:1 }", () => {
+      const data = makeCharacterData({ darkSidePoints: 2 });
+      data.prepareDerivedData();
+      expect(data.forceRollBonus).toEqual({ bonusDice: 1, bonusPips: 1 });
+    });
+
+    it("darkSidePoints=4 → forceRollBonus = { bonusDice:4, bonusPips:0 }", () => {
+      const data = makeCharacterData({ darkSidePoints: 4 });
+      data.prepareDerivedData();
+      expect(data.forceRollBonus).toEqual({ bonusDice: 4, bonusPips: 0 });
+    });
+  });
+
+  describe("keepUpPenalty derivation", () => {
+    it("no parent → keepUpPenalty = 0 (unit test context)", () => {
+      const data = makeCharacterData({});
+      data.prepareDerivedData();
+      expect(data.keepUpPenalty).toBe(0);
+    });
+
+    it("parent with no forcePower items → keepUpPenalty = 0", () => {
+      const data = makeCharacterData({});
+      data.parent = makeMockParent(data, []);
+      data.prepareDerivedData();
+      expect(data.keepUpPenalty).toBe(0);
+    });
+
+    it("parent with 2 keptUp canKeepUp forcePower items → keepUpPenalty = 2", () => {
+      const data = makeCharacterData({});
+      data.parent = makeMockParent(data, [
+        { type: "forcePower", system: { canKeepUp: true, keptUp: true, equipped: false, armorBonus: 0, weaponBonus: 0 } },
+        { type: "forcePower", system: { canKeepUp: true, keptUp: true, equipped: false, armorBonus: 0, weaponBonus: 0 } },
+        { type: "forcePower", system: { canKeepUp: true, keptUp: false, equipped: false, armorBonus: 0, weaponBonus: 0 } },
+        { type: "forcePower", system: { canKeepUp: false, keptUp: false, equipped: false, armorBonus: 0, weaponBonus: 0 } },
+        { type: "weapon",     system: { equipped: false, armorBonus: 0, weaponBonus: 0 } }
+      ]);
+      data.prepareDerivedData();
+      expect(data.keepUpPenalty).toBe(2);
+    });
+
+    it("parent with 0 keptUp items → keepUpPenalty = 0", () => {
+      const data = makeCharacterData({});
+      data.parent = makeMockParent(data, [
+        { type: "forcePower", system: { canKeepUp: true, keptUp: false, equipped: false, armorBonus: 0, weaponBonus: 0 } }
+      ]);
+      data.prepareDerivedData();
+      expect(data.keepUpPenalty).toBe(0);
     });
   });
 });
