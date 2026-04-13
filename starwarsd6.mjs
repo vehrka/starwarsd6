@@ -1,18 +1,21 @@
 import CharacterData from "./modules/actors/character-data.mjs";
 import CharacterActor from "./modules/actors/character.mjs";
+import NpcData from "./modules/actors/npc-data.mjs";
+import NpcActor from "./modules/actors/npc.mjs";
 import SkillData from "./modules/items/skill-data.mjs";
 import SkillItem from "./modules/items/skill.mjs";
 import WeaponData from "./modules/items/weapon-data.mjs";
 import ArmorData from "./modules/items/armor-data.mjs";
 import EquipmentData from "./modules/items/equipment-data.mjs";
 import CharacterSheet from "./modules/apps/character-sheet.mjs";
+import NpcSheet from "./modules/apps/npc-sheet.mjs";
 import SkillSheet from "./modules/apps/skill-sheet.mjs";
 import ItemSheet from "./modules/apps/item-sheet.mjs";
 import { rollExtraDie } from "./modules/helpers/dice.mjs";
 
 Hooks.once("init", () => {
   CONFIG.Actor.documentClass = CharacterActor;
-  CONFIG.Actor.dataModels = { character: CharacterData };
+  CONFIG.Actor.dataModels = { character: CharacterData, npc: NpcData };
   CONFIG.Item.documentClass = SkillItem;
   CONFIG.Item.dataModels = {
     skill: SkillData,
@@ -27,6 +30,12 @@ Hooks.once("init", () => {
     types: ["character"],
     makeDefault: true,
     label: "STARWARSD6.SheetClass.Character"
+  });
+
+  DocumentSheetConfig.registerSheet(Actor, "starwarsd6", NpcSheet, {
+    types: ["npc"],
+    makeDefault: true,
+    label: "STARWARSD6.SheetClass.NPC"
   });
 
   DocumentSheetConfig.unregisterSheet(Item, "core", foundry.appv1.sheets.ItemSheet);

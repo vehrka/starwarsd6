@@ -1,0 +1,150 @@
+<div class="starwarsd6 sheet actor npc">
+  <header class="sheet-header">
+    <input type="text" name="name" value="{{document.name}}" placeholder="NPC Name" />
+  </header>
+
+  <div class="sheet-body">
+
+    {{!-- STR Section --}}
+    <section class="npc-section">
+      <h3>{{localize "STARWARSD6.NPC.STR"}}</h3>
+      <div class="npc-row">
+        <div class="form-group">
+          <label>{{localize "STARWARSD6.Attribute.Dice"}}</label>
+          <input type="number" name="system.STR.dice" value="{{system.STR.dice}}" min="1" />
+        </div>
+        <div class="form-group">
+          <label>{{localize "STARWARSD6.Attribute.Pips"}}</label>
+          <input type="number" name="system.STR.pips" value="{{system.STR.pips}}" min="0" max="2" />
+        </div>
+        <div class="form-group">
+          <label>{{localize "STARWARSD6.Attribute.BaseValue"}}</label>
+          <span class="derived-value">{{system.STR.baseValue}}</span>
+        </div>
+        <div class="form-group">
+          <label>{{localize "STARWARSD6.Character.HitBoxes"}}</label>
+          <span class="derived-value">{{system.hitBoxes}}</span>
+        </div>
+      </div>
+    </section>
+
+    {{!-- Defense Section --}}
+    <section class="npc-section">
+      <h3>{{localize "STARWARSD6.Combat.Defense"}}</h3>
+      <div class="npc-row">
+        <div class="form-group">
+          <label>{{localize "STARWARSD6.Combat.RangedDefense"}}</label>
+          <input type="number" name="system.rangedDefense" value="{{system.rangedDefense}}" min="0" />
+        </div>
+        <div class="form-group">
+          <label>{{localize "STARWARSD6.Combat.MeleeDefense"}}</label>
+          <input type="number" name="system.meleeDefense" value="{{system.meleeDefense}}" min="0" />
+        </div>
+        <div class="form-group">
+          <label>{{localize "STARWARSD6.Combat.BrawlingDefense"}}</label>
+          <input type="number" name="system.brawlingDefense" value="{{system.brawlingDefense}}" min="0" />
+        </div>
+      </div>
+    </section>
+
+    {{!-- Damage Section --}}
+    <section class="npc-section">
+      <h3>{{localize "STARWARSD6.NPC.Damage"}}</h3>
+      <div class="npc-row">
+        <div class="form-group">
+          <label>{{localize "STARWARSD6.Attribute.Dice"}}</label>
+          <input type="number" name="system.damageDice" value="{{system.damageDice}}" min="1" />
+        </div>
+        <div class="form-group">
+          <label>{{localize "STARWARSD6.Attribute.Pips"}}</label>
+          <input type="number" name="system.damagePips" value="{{system.damagePips}}" min="0" max="2" />
+        </div>
+      </div>
+    </section>
+
+    {{!-- Damage Thresholds --}}
+    <section class="npc-section">
+      <h3>{{localize "STARWARSD6.Combat.DamageThresholds"}}</h3>
+      <table class="combat-defense-table">
+        <thead>
+          <tr>
+            <th>{{localize "STARWARSD6.Combat.Stun"}}</th>
+            <th>{{localize "STARWARSD6.Combat.Wound"}}</th>
+            <th>{{localize "STARWARSD6.Combat.Incap"}}</th>
+            <th>{{localize "STARWARSD6.Combat.Mortal"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="defense-value">{{combatData.thresholdStun}}</td>
+            <td class="defense-value">{{combatData.thresholdWound}}</td>
+            <td class="defense-value">{{combatData.thresholdIncap}}</td>
+            <td class="defense-value">{{combatData.thresholdMortal}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    {{!-- Hit Boxes --}}
+    <section class="npc-section">
+      <h3>{{localize "STARWARSD6.Combat.HitBoxes"}}</h3>
+      <div class="hit-box-tracker">
+
+        <div class="hit-box-row">
+          <span class="tier-label">{{localize "STARWARSD6.Combat.Stun"}}</span>
+          <div class="hit-boxes">
+            {{#each combatData.stunBoxes as |box|}}
+            <button type="button" class="hit-box {{#if box.marked}}marked{{/if}}"
+                    data-action="markHitBox" data-tier="stun"
+                    title="{{localize "STARWARSD6.Combat.Stun"}}"></button>
+            {{/each}}
+          </div>
+        </div>
+
+        <div class="hit-box-row">
+          <span class="tier-label">{{localize "STARWARSD6.Combat.Wound"}}</span>
+          <div class="hit-boxes">
+            {{#each combatData.woundBoxes as |box|}}
+            <button type="button" class="hit-box {{#if box.marked}}marked{{/if}}"
+                    data-action="markHitBox" data-tier="wound"
+                    title="{{localize "STARWARSD6.Combat.Wound"}}"></button>
+            {{/each}}
+          </div>
+        </div>
+
+        <div class="hit-box-row">
+          <span class="tier-label">{{localize "STARWARSD6.Combat.Incap"}}</span>
+          <div class="hit-boxes">
+            {{#each combatData.incapBoxes as |box|}}
+            <button type="button" class="hit-box {{#if box.marked}}marked{{/if}}"
+                    data-action="markHitBox" data-tier="incap"
+                    title="{{localize "STARWARSD6.Combat.Incap"}}"></button>
+            {{/each}}
+          </div>
+        </div>
+
+        <div class="hit-box-row">
+          <span class="tier-label">{{localize "STARWARSD6.Combat.Mortal"}}</span>
+          <div class="hit-boxes">
+            {{#each combatData.mortalBoxes as |box|}}
+            <button type="button" class="hit-box {{#if box.marked}}marked{{/if}}"
+                    data-action="markHitBox" data-tier="mortal"
+                    title="{{localize "STARWARSD6.Combat.Mortal"}}"></button>
+            {{/each}}
+          </div>
+        </div>
+
+      </div>
+      <p class="hit-box-hint">{{localize "STARWARSD6.Combat.HitBoxHint"}}</p>
+    </section>
+
+    {{!-- Notes --}}
+    <section class="npc-section">
+      <h3>{{localize "STARWARSD6.NPC.Notes"}}</h3>
+      <div class="form-group">
+        <textarea name="system.notes">{{system.notes}}</textarea>
+      </div>
+    </section>
+
+  </div>
+</div>

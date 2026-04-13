@@ -1,7 +1,7 @@
 # Star Wars D6 FoundryVTT — Implementation Plan
 
 **System:** FoundryVTT v13, plain ESM JavaScript, no build step  
-**Current state:** phase 0, phase 1, phase 2, phase 3, phase 4 and phase 5 completed
+**Current state:** phases 0–6 completed
 **Architecture:** ApplicationV2 + HandlebarsApplicationMixin, DataModels, KISS/YAGNI
 
 ---
@@ -16,9 +16,9 @@
 | 3 ✓ | Item Types | Weapons, armor, equipment | M | 1 |
 | 4 ✓ | Combat & Damage | Defense values, damage thresholds, hit boxes | L | 2, 3 |
 | 5 ✓ | Character Points & Force Points | CP/FP spend on rolls | M | 2 |
-| 6 | NPC Actor | NPC DataModel and sheet | M | 4 |
+| 6 ✓ | NPC Actor | NPC DataModel and sheet | M | 4 |
 | 7 | Force System | Force skills, powers, DSP | L | 5 |
-| 8 | Healing | Post-combat recovery | M | 4 |
+| 8 | Targeted Combat Resolution | Auto-resolve attack vs. target defense; damage roll → hit box suggestion | M | 4, 6 |
 | 9 | Sheet Polish | Tabs, CSS, localization | M | 4 |
 
 ---
@@ -336,35 +336,64 @@ Derive `hitBoxes = STR.dice` and damage thresholds from `calculateDamageThreshol
 
 ---
 
-## Phase 8 — Healing
+## Phase 8 — Targeted Combat Resolution
 
-**Goal:** Stamina and medicine healing rolls with correct difficulty tables applied per tier. Most-serious-tier-first enforcement.
+**Goal:** Attack rolls resolve automatically against a targeted token's defense values. A hit triggers a damage roll that compares against the target's STR thresholds and suggests which hit box tier to mark. With no target selected, the player inputs a manual difficulty number.
 
-**Complexity:** M | **Dependencies:** Phase 4
+**Complexity:** M | **Dependencies:** Phases 4, 6
+
+> **Why not healing:** Medicine and first aid are applied by a *healer* to another actor — placing those buttons on the patient's own sheet is the wrong UX. Manual Shift+Alt+click on hit boxes is sufficient for GM-adjudicated healing. Stamina recovery is a normal skill roll; the result is applied manually.
+
+### Attack flow — with target
+
+1. Player targets a token (Foundry's standard targeting, `game.user.targets`). Only one target is supported; if multiple are targeted, only the first is used.
+2. Player presses Roll Attack on their sheet. System reads defense from the target actor based on weapon type (same RANGED/MELEE/BRAWLING logic already in `#rollAttack`):
+   - Ranged weapons → `target.system.rangedDefense`
+   - Melee weapons → `target.system.meleeDefense`
+   - Brawling → `target.system.brawlingDefense`
+3. Attack chat card shows target name, defense value, and hit/miss result.
+4. On a **hit**: a "Roll Damage" button appears in the chat card.
+5. Player clicks "Roll Damage" — rolls `damageDice`d6 + `damagePips` (no wild die).
+6. Damage total compared against `target.system.damageBase` → tier resolved via `resolveDamageTier`.
+7. Chat card appends the damage total, resolved tier, and a **"Mark Hit Box"** button.
+8. Clicking "Mark Hit Box" calls `applyDamage(targetActor, tier)` on the target actor. Button is GM-only (only the GM has write access to other actors); uses a socket call for non-owner players.
+
+### Attack flow — without target
+
+1. `RollDialog` gains an optional "Difficulty" number input (shown when no target is selected).
+2. Roll resolves against that number. Chat card shows difficulty and hit/miss.
+3. No "Roll Damage" button — GM adjudicates damage and marks manually via hit-box controls.
 
 ### Files to create:
-- `modules/helpers/healing.mjs` — `resolveStaminaHealing(rollTotal)`, `resolveMedicineHealing(rollTotal, tier)`, `applyHealing(actor, tier, amount)`
-
-```js
-// resolveStaminaHealing(rollTotal) → heals wounds only
-// 6–10 → 1,  11–15 → 2,  16–20 → 3
-
-// resolveMedicineHealing(rollTotal, tier):
-// "wound":  3–5→1, 6–8→2, 9–12→3, 13–16→4
-// "incap":  6–10→1, 11–15→2, 16–20→3, 21–25→4
-// "mortal": 11–15→1, 16–20→2, 21–25→3, 26–30→4
-
-// applyHealing(actor, tier, amount):
-// Validates most-serious-first: if mortalMarks > 0 and tier !== "mortal" → throw + chat warning
-// Decrements actor.system[`${tier}Marks`] by amount (min 0) via actor.update()
-```
+- `modules/helpers/socket.mjs` — `requestApplyDamage(targetActorId, tier)` — emits a socket message for the GM client to call `applyDamage` when the player is not the target's owner
 
 ### Files to modify:
-- `modules/apps/character-sheet.mjs` — "Stamina Roll" and "Medicine Roll" buttons in combat tab
-- `templates/actors/character-sheet.hbs` — healing buttons in combat tab
-- `lang/en.json` — healing tier labels
+- `modules/apps/character-sheet.mjs` — `#rollAttack`: check `game.user.targets`; branch on target vs. no-target; pass target actor and defense to `#postAttackToChat`
+- `modules/helpers/damage.mjs` — add `rollDamage(damageDice, damagePips) → Promise<number>` (plain Nd6 + pips, no wild die)
+- `modules/apps/roll-dialog.mjs` — add optional "Difficulty" number input rendered when `noTarget: true` is passed
+- `modules/apps/character-sheet.mjs` — `#postAttackToChat`: embed target actor id and weapon damage in chat message flags; add "Roll Damage" and "Mark Hit Box" button handlers wired via `Hooks.on("renderChatMessage", ...)`
+- `starwarsd6.mjs` — register socket handler on `Hooks.once("ready", ...)`
+- `lang/en.json` — target name label, difficulty label, roll damage, mark hit box, no target warning
 
-**Testing:** 2 wound marks. Stamina roll result 14 → heals 2 wounds. Try to heal wound while incapacitated → warning in chat, no healing applied.
+### Key implementation notes:
+
+**Reading target defense:** `game.user.targets` is a `Set<Token>`. Get the actor via `token.actor`. Both `CharacterData` and `NpcData` expose `rangedDefense`, `meleeDefense`, `brawlingDefense` — no type check needed.
+
+**Chat message flags:** Store `{ targetActorId, damageDice, damagePips, damageBase, hit }` as flags on the `ChatMessage` so the "Roll Damage" and "Mark Hit Box" handlers can retrieve them without closing over sheet state.
+
+**Socket pattern:**
+```js
+// In socket.mjs
+game.socket.on("system.starwarsd6", async ({ action, targetActorId, tier }) => {
+  if (!game.user.isGM) return;
+  if (action === "applyDamage") {
+    const actor = game.actors.get(targetActorId);
+    if (actor) await applyDamage(actor, tier);
+  }
+});
+```
+
+**Testing:** Target a character with STR 3D (base=10, 3 hit boxes/tier). Roll ranged attack — chat shows target's rangedDefense. On hit, click "Roll Damage" — result 15 → wound tier. GM clicks "Mark Hit Box" → target gains one wound mark. With no target, enter difficulty 12 — roll resolves against 12, no damage button shown.
 
 ---
 
@@ -393,7 +422,7 @@ Phase 0 (bug fix)
         │     ├─► Phase 4 (combat)
         │     │     ├─► Phase 5 (CP/FP) ──► Phase 7 (Force)
         │     │     ├─► Phase 6 (NPC)
-        │     │     └─► Phase 8 (healing)
+        │     │     └─► Phase 8 (targeted combat resolution)
         │     └─► Phase 5
         └─► Phase 3 (item types)
               └─► Phase 4
@@ -407,7 +436,7 @@ Phase 9 (polish) — final cleanup, no hard dependencies
 - Compendium packs (pre-built skill items, weapons)
 - Vehicle / starship actor type
 - Active Effects (no modifier stacking in D6)
-- Token automation (auto-apply damage from chat)
+- Healing rolls on the sheet (medicine/first aid are healer-to-patient; manual Shift+Alt+click is sufficient)
 - Force power catalogue as coded items (free-text on sheet is sufficient)
 
 ---
@@ -418,8 +447,10 @@ Phase 9 (polish) — final cleanup, no hard dependencies
 |------|--------------------|
 | `modules/apps/character-sheet.mjs` | 0, 1, 2, 4, 5, 7, 8, 9 |
 | `modules/actors/character-data.mjs` | 1, 4, 5, 7 |
-| `starwarsd6.mjs` | 1, 3, 6 |
+| `starwarsd6.mjs` | 1, 3, 6, 8 |
 | `system.json` | 3 (items), 6 (npc) |
 | `modules/helpers/dice.mjs` | 2, 5 |
-| `modules/helpers/damage.mjs` | 4, 6 |
+| `modules/helpers/damage.mjs` | 4, 6, 8 |
+| `modules/helpers/socket.mjs` | 8 (new) |
+| `modules/apps/roll-dialog.mjs` | 2, 8 |
 | `lang/en.json` | 1, 3, 4, 8, 9 |

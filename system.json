@@ -15,7 +15,8 @@
   ],
   "documentTypes": {
     "Actor": {
-      "character": {}
+      "character": {},
+      "npc": {}
     },
     "Item": {
       "skill": {},
