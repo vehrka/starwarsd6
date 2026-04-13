@@ -1,6 +1,18 @@
 <div class="starwarsd6 sheet actor character">
   <header class="sheet-header">
     <input type="text" name="name" value="{{document.name}}" placeholder="Character Name" />
+    <div class="header-stats">
+      <span class="cp-display" title="{{localize 'STARWARSD6.Character.CharacterPoints'}}">
+        CP: <strong>{{system.characterPoints}}</strong>
+      </span>
+      <span class="fp-display" title="{{localize 'STARWARSD6.Character.ForcePoints'}}">
+        FP: <strong>{{system.forcePoints}}</strong>
+      </span>
+      <button type="button" data-action="newRound" class="new-round-btn"
+              title="{{localize 'STARWARSD6.Roll.NewRound'}}">
+        {{localize "STARWARSD6.Roll.NewRound"}}
+      </button>
+    </div>
   </header>
 
   {{!-- Tab navigation --}}

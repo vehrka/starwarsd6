@@ -5,6 +5,7 @@
  * @property {number[]} wildRolls   — Wild die chain: [first, ...explosions] (≥1 element)
  * @property {boolean} isComplication — true when first wild roll was 1
  * @property {number} pips          — Pip bonus applied
+ * @property {boolean} doubled      — true if Force Point doubling was applied
  */
 
 /**
@@ -24,10 +25,13 @@ async function rollOneDie() {
  * @param {number} pips                       Pip bonus (0, 1, or 2)
  * @param {number} [multipleActionPenalty=0]  Penalty dice from multiple actions
  * @param {Function} [_rollFn=rollOneDie]     Injected roll function — override in tests
+ * @param {object} [options={}]               Options object
+ * @param {boolean} [options.doubled=false]   If true, double base dice (Force Point spend) before penalty
  * @returns {Promise<RollResult>}
  */
-export async function rollWithWildDie(dice, pips, multipleActionPenalty = 0, _rollFn = rollOneDie) {
-  const effective = Math.max(1, dice - multipleActionPenalty);
+export async function rollWithWildDie(dice, pips, multipleActionPenalty = 0, _rollFn = rollOneDie, { doubled = false } = {}) {
+  const baseDice = doubled ? dice * 2 : dice;
+  const effective = Math.max(1, baseDice - multipleActionPenalty);
 
   // Roll (effective - 1) normal d6s
   const normalDice = [];
@@ -49,7 +53,17 @@ export async function rollWithWildDie(dice, pips, multipleActionPenalty = 0, _ro
   const wildTotal = wildRolls.reduce((sum, n) => sum + n, 0);
   const total = normalTotal + wildTotal + pips;
 
-  return { total, normalDice, wildRolls, isComplication, pips };
+  return { total, normalDice, wildRolls, isComplication, pips, doubled };
+}
+
+/**
+ * Roll one extra d6 — used for Character Point spend after a roll resolves.
+ *
+ * @param {Function} [_rollFn=rollOneDie]  Injected roll function — override in tests
+ * @returns {Promise<number>}  The single die result
+ */
+export async function rollExtraDie(_rollFn = rollOneDie) {
+  return _rollFn();
 }
 
 /**

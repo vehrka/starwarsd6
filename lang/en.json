@@ -116,5 +116,12 @@
   "STARWARSD6.Inventory.Armor": "Armor",
   "STARWARSD6.Inventory.Equipment": "Equipment",
   "STARWARSD6.Inventory.Empty": "None",
-  "STARWARSD6.Item.Equipped": "Equipped"
+  "STARWARSD6.Item.Equipped": "Equipped",
+  "STARWARSD6.CP.SpendCP": "Spend CP (+1D)",
+  "STARWARSD6.CP.CPSpent": "CP Spent",
+  "STARWARSD6.CP.FPSpent": "FP Spent This Round",
+  "STARWARSD6.FP.SpendFP": "Force Point (double dice)",
+  "STARWARSD6.FP.NoFP": "No Force Points remaining",
+  "STARWARSD6.Roll.NewRound": "New Round",
+  "STARWARSD6.Roll.ExtraDie": "extra die (CP)"
 }

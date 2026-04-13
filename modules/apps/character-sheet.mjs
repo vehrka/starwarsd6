@@ -18,7 +18,8 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
       rollAttack: CharacterSheet.#rollAttack,
       markHitBox: CharacterSheet.#markHitBox,
       deleteItem: CharacterSheet.#deleteItem,
-      toggleEquipped: CharacterSheet.#toggleEquipped
+      toggleEquipped: CharacterSheet.#toggleEquipped,
+      newRound: CharacterSheet.#newRound
     }
   };
 
@@ -143,14 +144,32 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     const skill = this.document.items.get(skillId);
     if (!skill) return;
 
-    const result = await RollDialog.prompt();
+    const fp = this.document.system.forcePoints;
+    const fpSpent = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
+    const result = await RollDialog.prompt({ canSpendFP: !fpSpent, hasFP: fp > 0 });
     if (result === null) return; // cancelled
 
-    const { numActions } = result;
-    const penalty = numActions - 1;
-    const rollResult = await rollWithWildDie(skill.system.dicePool, skill.system.pips, penalty);
+    const { numActions, useForcePoint } = result;
 
-    await CharacterSheet.#postRollToChat(this.document, skill.name, rollResult, numActions);
+    if (useForcePoint) {
+      await this.document.update({ "system.forcePoints": Math.max(0, fp - 1) });
+      await this.document.setFlag("starwarsd6", "fpSpentThisRound", true);
+    }
+
+    const penalty = numActions - 1;
+    const rollResult = await rollWithWildDie(
+      skill.system.dicePool, skill.system.pips, penalty,
+      undefined,
+      { doubled: useForcePoint }
+    );
+
+    const cpNow = this.document.system.characterPoints;
+    const fpSpentNow = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
+
+    await CharacterSheet.#postRollToChat(
+      this.document, skill.name, rollResult, numActions,
+      { cpAvailable: cpNow, fpSpentThisRound: fpSpentNow }
+    );
   }
 
   /**
@@ -164,15 +183,29 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     const attr = this.document.system[attributeKey];
     if (!attr) return;
 
-    const result = await RollDialog.prompt();
+    const fp = this.document.system.forcePoints;
+    const fpSpent = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
+    const result = await RollDialog.prompt({ canSpendFP: !fpSpent, hasFP: fp > 0 });
     if (result === null) return;
 
-    const { numActions } = result;
+    const { numActions, useForcePoint } = result;
+
+    if (useForcePoint) {
+      await this.document.update({ "system.forcePoints": Math.max(0, fp - 1) });
+      await this.document.setFlag("starwarsd6", "fpSpentThisRound", true);
+    }
+
     const penalty = numActions - 1;
     const attrLabel = game.i18n.localize(`STARWARSD6.Attribute.${attributeKey}`);
-    const rollResult = await rollWithWildDie(attr.dice, attr.pips, penalty);
+    const rollResult = await rollWithWildDie(attr.dice, attr.pips, penalty, undefined, { doubled: useForcePoint });
 
-    await CharacterSheet.#postRollToChat(this.document, attrLabel, rollResult, numActions);
+    const cpNow = this.document.system.characterPoints;
+    const fpSpentNow = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
+
+    await CharacterSheet.#postRollToChat(
+      this.document, attrLabel, rollResult, numActions,
+      { cpAvailable: cpNow, fpSpentThisRound: fpSpentNow }
+    );
   }
 
   /**
@@ -181,8 +214,11 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
    * @param {string} label  — Skill or attribute name
    * @param {RollResult} result
    * @param {number} numActions
+   * @param {object} [cpOptions={}]
+   * @param {number} [cpOptions.cpAvailable=0]
+   * @param {boolean} [cpOptions.fpSpentThisRound=false]
    */
-  static async #postRollToChat(actor, label, result, numActions) {
+  static async #postRollToChat(actor, label, result, numActions, { cpAvailable = 0, fpSpentThisRound = false } = {}) {
     const speaker = ChatMessage.getSpeaker({ actor });
     const effectiveDice = result.normalDice.length + 1; // normal + wild
     const penaltyNote = numActions > 1
@@ -204,12 +240,27 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     const normalStr = result.normalDice.length > 0
       ? `Normal: [${result.normalDice.join(", ")}] | ` : "";
     const pipsStr = result.pips > 0 ? ` +${result.pips} pips` : "";
+
+    const cpDisabled = (cpAvailable <= 0 || fpSpentThisRound) ? " disabled" : "";
+    const cpLabel = game.i18n.localize("STARWARSD6.CP.SpendCP");
+    const cpCountLabel = cpAvailable > 0
+      ? ` (${cpAvailable} ${game.i18n.localize("STARWARSD6.Character.CharacterPoints")})`
+      : "";
+    const cpButton = `
+      <div class="cp-action">
+        <button type="button" class="spend-cp-btn" data-actor-id="${actor.id}"
+                data-roll-total="${result.total}"${cpDisabled}>
+          ${cpLabel}${cpCountLabel}
+        </button>
+      </div>`;
+
     const content = `
       <div class="starwarsd6 roll-result">
         <h3>${label}${penaltyNote}</h3>
         <div class="roll-formula">${effectiveDice}D${pipsStr}</div>
         <div class="roll-dice">${normalStr}Wild: ${wildStr}${explosion}${complications}</div>
-        <div class="roll-total"><strong>${game.i18n.localize("STARWARSD6.Roll.Total")}: ${result.total}</strong></div>
+        <div class="roll-total"><strong>${game.i18n.localize("STARWARSD6.Roll.Total")}: <span class="total-value">${result.total}</span></strong></div>
+        ${cpButton}
       </div>`;
 
     await ChatMessage.create({ speaker, content });
@@ -244,15 +295,23 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     const skillDice = skillItem ? skillItem.system.dicePool : this.document.system.DEX.dice;
     const skillPips = skillItem ? skillItem.system.pips : this.document.system.DEX.pips;
 
-    const dialogResult = await RollDialog.prompt();
+    const fp = this.document.system.forcePoints;
+    const fpSpent = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
+    const dialogResult = await RollDialog.prompt({ canSpendFP: !fpSpent, hasFP: fp > 0 });
     if (dialogResult === null) return;
 
-    const { numActions } = dialogResult;
+    const { numActions, useForcePoint } = dialogResult;
+
+    if (useForcePoint) {
+      await this.document.update({ "system.forcePoints": Math.max(0, fp - 1) });
+      await this.document.setFlag("starwarsd6", "fpSpentThisRound", true);
+    }
+
     const penaltyDice = this.document.system.penaltyDice;
     const penaltyPips = this.document.system.penaltyPips;
     const totalPenalty = penaltyDice + (numActions - 1);
 
-    const rollResult = await rollWithWildDie(skillDice, skillPips, totalPenalty);
+    const rollResult = await rollWithWildDie(skillDice, skillPips, totalPenalty, undefined, { doubled: useForcePoint });
     rollResult.total = Math.max(0, rollResult.total - penaltyPips);
 
     // Determine defense type for chat display
@@ -270,7 +329,13 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
       defenseValue = this.document.system.brawlingDefense;
     }
 
-    await CharacterSheet.#postAttackToChat(this.document, weapon.name, rollResult, numActions, defenseLabel, defenseValue);
+    const cpNow = this.document.system.characterPoints;
+    const fpSpentNow = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
+
+    await CharacterSheet.#postAttackToChat(
+      this.document, weapon.name, rollResult, numActions, defenseLabel, defenseValue,
+      { cpAvailable: cpNow, fpSpentThisRound: fpSpentNow }
+    );
   }
 
   /**
@@ -335,8 +400,11 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
    * @param {number} numActions
    * @param {string} defenseLabel
    * @param {number} defenseValue
+   * @param {object} [cpOptions={}]
+   * @param {number} [cpOptions.cpAvailable=0]
+   * @param {boolean} [cpOptions.fpSpentThisRound=false]
    */
-  static async #postAttackToChat(actor, weaponName, result, numActions, defenseLabel, defenseValue) {
+  static async #postAttackToChat(actor, weaponName, result, numActions, defenseLabel, defenseValue, { cpAvailable = 0, fpSpentThisRound = false } = {}) {
     const speaker = ChatMessage.getSpeaker({ actor });
     const effectiveDice = result.normalDice.length + 1;
     const penaltyNote = numActions > 1
@@ -362,15 +430,37 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
       ? `<span class="hit">${game.i18n.localize("STARWARSD6.Combat.Hit")}</span>`
       : `<span class="miss">${game.i18n.localize("STARWARSD6.Combat.Miss")}</span>`;
 
+    const cpDisabled = (cpAvailable <= 0 || fpSpentThisRound) ? " disabled" : "";
+    const cpLabel = game.i18n.localize("STARWARSD6.CP.SpendCP");
+    const cpCountLabel = cpAvailable > 0
+      ? ` (${cpAvailable} ${game.i18n.localize("STARWARSD6.Character.CharacterPoints")})`
+      : "";
+    const cpButton = `
+      <div class="cp-action">
+        <button type="button" class="spend-cp-btn" data-actor-id="${actor.id}"
+                data-roll-total="${result.total}"${cpDisabled}>
+          ${cpLabel}${cpCountLabel}
+        </button>
+      </div>`;
+
     const content = `
       <div class="starwarsd6 roll-result">
         <h3>${game.i18n.localize("STARWARSD6.Combat.AttackRoll")}: ${weaponName}${penaltyNote}</h3>
         <div class="roll-formula">${effectiveDice}D${pipsStr}</div>
         <div class="roll-dice">${normalStr}Wild: ${wildStr}${explosion}${complications}</div>
-        <div class="roll-total"><strong>${game.i18n.localize("STARWARSD6.Roll.Total")}: ${result.total}</strong></div>
+        <div class="roll-total"><strong>${game.i18n.localize("STARWARSD6.Roll.Total")}: <span class="total-value">${result.total}</span></strong></div>
         <div class="roll-defense">${defenseLabel}: ${defenseValue} — ${hit}</div>
+        ${cpButton}
       </div>`;
 
     await ChatMessage.create({ speaker, content });
+  }
+
+  /**
+   * Clear the fpSpentThisRound flag for out-of-combat "New Round" use.
+   * @this {CharacterSheet}
+   */
+  static async #newRound(event, target) {
+    await this.document.unsetFlag("starwarsd6", "fpSpentThisRound");
   }
 }

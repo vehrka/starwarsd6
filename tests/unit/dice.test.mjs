@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { rollWithWildDie } from "../../modules/helpers/dice.mjs";
+import { rollWithWildDie, rollExtraDie } from "../../modules/helpers/dice.mjs";
 
 // Helper: create a mock roll function that returns values from a sequence
 function makeMockRoll(sequence) {
@@ -106,5 +106,47 @@ describe("rollWithWildDie()", () => {
       const result = await rollWithWildDie(3, 0, 0, mock);
       expect(result.normalDice).toHaveLength(2);
     });
+  });
+
+  describe("doubled option", () => {
+    it("doubles effective dice when doubled=true", async () => {
+      // dice=3, doubled=true → effectiveDice=6 → 5 normal + 1 wild
+      const mock = makeMockRoll([1, 2, 3, 4, 5, 4]); // 5 normal, wild=4
+      const result = await rollWithWildDie(3, 0, 0, mock, { doubled: true });
+      expect(mock).toHaveBeenCalledTimes(6);
+      expect(result.normalDice).toHaveLength(5);
+      expect(result.doubled).toBe(true);
+    });
+
+    it("doubled=true then penalty reduces from doubled base", async () => {
+      // dice=3, doubled=true → base=6, penalty=1 → effective=5
+      const mock = makeMockRoll([1, 2, 3, 4, 5]); // 4 normal, wild=5
+      const result = await rollWithWildDie(3, 0, 1, mock, { doubled: true });
+      expect(mock).toHaveBeenCalledTimes(5);
+      expect(result.normalDice).toHaveLength(4);
+    });
+
+    it("doubled=false (default) produces normal roll", async () => {
+      const mock = makeMockRoll([3, 4, 5]); // dice=3: 2 normal + wild
+      const result = await rollWithWildDie(3, 0, 0, mock, { doubled: false });
+      expect(mock).toHaveBeenCalledTimes(3);
+      expect(result.normalDice).toHaveLength(2);
+    });
+
+    it("omitting options object behaves as before (backward compat)", async () => {
+      const mock = makeMockRoll([3, 4, 5]);
+      const result = await rollWithWildDie(3, 0, 0, mock);
+      expect(mock).toHaveBeenCalledTimes(3);
+      expect(result.doubled).toBe(false);
+    });
+  });
+});
+
+describe("rollExtraDie()", () => {
+  it("calls _rollFn once and returns the value", async () => {
+    const mock = vi.fn(async () => 5);
+    const value = await rollExtraDie(mock);
+    expect(mock).toHaveBeenCalledTimes(1);
+    expect(value).toBe(5);
   });
 });
