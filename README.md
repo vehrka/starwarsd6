@@ -10,6 +10,7 @@ A fully playable Star Wars D6 system for Foundry VTT v13, covering:
 - Wild-die roll engine with complication and explosion annotations in chat
 - Weapons, armor, and equipment item types with inventory management
 - Combat resolution: derived defense values, damage tiers, hit-box tracking, wound penalties
+- Non-combat skill/attribute rolls show a pre-filled difficulty and Success/Failure result in chat
 - Character Points and Force Points spend mechanics
 - NPC actor type with simplified sheet
 - Force System: control/sense/alter skills, DSP bonus, keep-up powers, dark side conversion

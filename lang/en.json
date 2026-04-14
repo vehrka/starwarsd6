@@ -162,5 +162,8 @@
   "STARWARSD6.Combat.MarkHitBox": "Mark Hit Box",
   "STARWARSD6.Combat.DamageTotal": "Damage",
   "STARWARSD6.Combat.DamageTier": "Tier",
-  "STARWARSD6.Combat.NoTarget": "No target selected"
+  "STARWARSD6.Combat.NoTarget": "No target selected",
+  "STARWARSD6.RollDifficulty": "Difficulty",
+  "STARWARSD6.RollSuccess": "Success",
+  "STARWARSD6.RollFailure": "Failure"
 }

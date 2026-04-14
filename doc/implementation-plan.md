@@ -398,6 +398,21 @@ game.socket.on("system.starwarsd6", async ({ action, targetActorId, tier }) => {
 
 ---
 
+## feat014 — Non-Combat Skill Roll Difficulty
+
+**Goal:** Show a pre-filled Difficulty field in `RollDialog` for all non-combat skill and attribute rolls. The chat card shows the difficulty used and a Success / Failure label.
+
+**Behaviour:**
+- `#rollSkill` computes `defaultDifficulty = Math.ceil(3.5 * skill.system.dicePool)` and passes `showDifficulty: true, defaultDifficulty` to `RollDialog.prompt()`.
+- `#rollAttribute` computes `defaultDifficulty = Math.ceil(3.5 * attr.dice)` and passes the same flags.
+- `RollDialog` private field renamed `#noTarget` → `#showDifficulty`; `#defaultDifficulty` added. Attack path passes `showDifficulty: noTarget` (unchanged behaviour).
+- Chat card: when `Number.isFinite(difficulty) && difficulty > 0`, renders `Difficulty: N — Success/Failure`. When difficulty is 0 / blank / NaN, renders total only.
+- Force skill path (`#rollForceSkill`) and attack path (`#postAttackToChat`) are unaffected.
+
+**Files modified:** `modules/apps/roll-dialog.mjs`, `modules/apps/character-sheet.mjs`, `templates/dice/roll-dialog.hbs`, `lang/en.json`
+
+---
+
 ## Phase 9 — Sheet Polish, CSS, Full Localization
 
 **Goal:** Professional tabbed sheet, complete i18n, styled chat cards for rolls.

@@ -181,10 +181,11 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     const fp = this.document.system.forcePoints;
     const fpSpent = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
-    const result = await RollDialog.prompt({ canSpendFP: !fpSpent, hasFP: fp > 0 });
+    const defaultDifficulty = Math.ceil(3.5 * skill.system.dicePool);
+    const result = await RollDialog.prompt({ canSpendFP: !fpSpent, hasFP: fp > 0, showDifficulty: true, defaultDifficulty });
     if (result === null) return; // cancelled
 
-    const { numActions, useForcePoint } = result;
+    const { numActions, useForcePoint, difficulty } = result;
 
     if (useForcePoint) {
       await this.document.update({ "system.forcePoints": Math.max(0, fp - 1) });
@@ -204,7 +205,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     await CharacterSheet.#postRollToChat(
       this.document, skill.name, rollResult, numActions,
-      { keepUpPenalty, penaltyDice, penaltyPips }
+      { keepUpPenalty, penaltyDice, penaltyPips, difficulty }
     );
   }
 
@@ -221,10 +222,11 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     const fp = this.document.system.forcePoints;
     const fpSpent = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
-    const result = await RollDialog.prompt({ canSpendFP: !fpSpent, hasFP: fp > 0 });
+    const defaultDifficulty = Math.ceil(3.5 * attr.dice);
+    const result = await RollDialog.prompt({ canSpendFP: !fpSpent, hasFP: fp > 0, showDifficulty: true, defaultDifficulty });
     if (result === null) return;
 
-    const { numActions, useForcePoint } = result;
+    const { numActions, useForcePoint, difficulty } = result;
 
     if (useForcePoint) {
       await this.document.update({ "system.forcePoints": Math.max(0, fp - 1) });
@@ -241,7 +243,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     await CharacterSheet.#postRollToChat(
       this.document, attrLabel, rollResult, numActions,
-      { keepUpPenalty, penaltyDice, penaltyPips }
+      { keepUpPenalty, penaltyDice, penaltyPips, difficulty }
     );
   }
 
@@ -273,7 +275,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
    * @param {object} [options={}]
    * @param {number} [options.keepUpPenalty=0]
    */
-  static async #postRollToChat(actor, label, result, numActions, { keepUpPenalty = 0, penaltyDice = 0, penaltyPips = 0 } = {}) {
+  static async #postRollToChat(actor, label, result, numActions, { keepUpPenalty = 0, penaltyDice = 0, penaltyPips = 0, difficulty = null } = {}) {
     const speaker = ChatMessage.getSpeaker({ actor });
     const effectiveDice = result.normalDice.length + 1; // normal + wild
 
@@ -295,6 +297,17 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     const penaltyStr = CharacterSheet.#buildPenaltyLines(numActions, keepUpPenalty, penaltyDice, penaltyPips);
 
+    const hasDifficulty = Number.isFinite(difficulty) && difficulty > 0;
+    const difficultyStr = hasDifficulty
+      ? (() => {
+          const isSuccess = result.total >= difficulty;
+          const outcomeLabel = isSuccess
+            ? `<span class="success">${game.i18n.localize("STARWARSD6.RollSuccess")}</span>`
+            : `<span class="failure">${game.i18n.localize("STARWARSD6.RollFailure")}</span>`;
+          return `<div class="roll-difficulty">${game.i18n.localize("STARWARSD6.RollDifficulty")}: ${difficulty} — ${outcomeLabel}</div>`;
+        })()
+      : "";
+
     const content = `
       <div class="starwarsd6 roll-result">
         <h3>${label}</h3>
@@ -302,6 +315,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
         ${penaltyStr}
         <div class="roll-dice">${normalStr}Wild: ${wildStr}${explosion}${complications}</div>
         <div class="roll-total"><strong>${game.i18n.localize("STARWARSD6.Roll.Total")}: <span class="total-value">${result.total}</span></strong></div>
+        ${difficultyStr}
       </div>`;
 
     await ChatMessage.create({ speaker, content });
@@ -344,7 +358,8 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     const fp = this.document.system.forcePoints;
     const fpSpent = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
-    const dialogResult = await RollDialog.prompt({ canSpendFP: !fpSpent, hasFP: fp > 0, noTarget });
+    const defaultDifficulty = noTarget ? Math.ceil(3.5 * skillDice) : 0;
+    const dialogResult = await RollDialog.prompt({ canSpendFP: !fpSpent, hasFP: fp > 0, showDifficulty: noTarget, defaultDifficulty });
     if (dialogResult === null) return;
 
     const { numActions, useForcePoint, difficulty } = dialogResult;
