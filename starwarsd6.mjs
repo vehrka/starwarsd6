@@ -17,6 +17,20 @@ import { rollDamage } from "./modules/helpers/dice.mjs";
 import { applyDamage, resolveDamageTier } from "./modules/helpers/damage.mjs";
 import { handleSocketMessage, requestApplyDamage } from "./modules/helpers/socket.mjs";
 
+/**
+ * Resolve a target actor from a token ID (handles unlinked tokens) with actor ID fallback.
+ * @param {string} tokenId
+ * @param {string} actorId
+ * @returns {Actor|null}
+ */
+function resolveTargetActor(tokenId, actorId) {
+  if (tokenId) {
+    const token = canvas.tokens?.get(tokenId);
+    if (token?.actor) return token.actor;
+  }
+  return game.actors.get(actorId) ?? null;
+}
+
 Hooks.once("init", () => {
   CONFIG.Actor.documentClass = CharacterActor;
   CONFIG.Actor.dataModels = { character: CharacterData, npc: NpcData };
@@ -67,6 +81,7 @@ Hooks.once("init", () => {
     html.querySelectorAll(".roll-damage-btn:not([disabled])").forEach(btn => {
       btn.addEventListener("click", async () => {
         const targetActorId = btn.dataset.targetActorId;
+        const targetTokenId = btn.dataset.targetTokenId;
         const damageDice    = parseInt(btn.dataset.damageDice);
         const damagePips    = parseInt(btn.dataset.damagePips);
         const damageBase    = parseInt(btn.dataset.damageBase);
@@ -101,6 +116,7 @@ Hooks.once("init", () => {
             <div class="mark-hit-box-action">
               <button type="button" class="mark-hit-box-btn"
                       data-target-actor-id="${targetActorId}"
+                      data-target-token-id="${targetTokenId}"
                       data-tier="${tier}">
                 ${game.i18n.localize("STARWARSD6.Combat.MarkHitBox")}
               </button>
@@ -116,16 +132,17 @@ Hooks.once("init", () => {
     html.querySelectorAll(".mark-hit-box-btn:not([disabled])").forEach(btn => {
       btn.addEventListener("click", async () => {
         const targetActorId = btn.dataset.targetActorId;
+        const targetTokenId = btn.dataset.targetTokenId;
         const tier = btn.dataset.tier;
 
         // Disable immediately to prevent double-click
         btn.disabled = true;
 
         if (game.user.isGM) {
-          const actor = game.actors.get(targetActorId);
+          const actor = resolveTargetActor(targetTokenId, targetActorId);
           if (actor) await applyDamage(actor, tier);
         } else {
-          requestApplyDamage(targetActorId, tier);
+          requestApplyDamage(targetActorId, targetTokenId, tier);
         }
 
         // Persist disabled state in stored message content

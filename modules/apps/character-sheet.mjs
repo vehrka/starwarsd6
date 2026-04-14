@@ -384,7 +384,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     const isHit = rollResult.total >= defenseValue;
     await CharacterSheet.#postAttackToChat(
       this.document, weapon, rollResult, numActions, defenseLabel, defenseValue,
-      targetActor, isHit,
+      targetActor, isHit, targetToken?.id ?? null,
       { keepUpPenalty, penaltyDice, penaltyPips }
     );
   }
@@ -471,7 +471,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
    * @param {number} [options.penaltyDice=0]
    * @param {number} [cpOptions.penaltyPips=0]
    */
-  static async #postAttackToChat(actor, weapon, result, numActions, defenseLabel, defenseValue, targetActor, isHit, { keepUpPenalty = 0, penaltyDice = 0, penaltyPips = 0 } = {}) {
+  static async #postAttackToChat(actor, weapon, result, numActions, defenseLabel, defenseValue, targetActor, isHit, targetTokenId = null, { keepUpPenalty = 0, penaltyDice = 0, penaltyPips = 0 } = {}) {
     const speaker = ChatMessage.getSpeaker({ actor });
     const effectiveDice = result.normalDice.length + 1;
 
@@ -504,6 +504,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
       ? `<div class="damage-action">
            <button type="button" class="roll-damage-btn"
                    data-target-actor-id="${targetActor.id}"
+                   data-target-token-id="${targetTokenId ?? ""}"
                    data-damage-dice="${weapon.system.damageDice}"
                    data-damage-pips="${weapon.system.damagePips}"
                    data-damage-base="${targetActor.system.damageBase}">
@@ -515,6 +516,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     const flags = (isHit && targetActor)
       ? { starwarsd6: {
           targetActorId: targetActor.id,
+          targetTokenId: targetTokenId ?? null,
           damageDice: weapon.system.damageDice,
           damagePips: weapon.system.damagePips,
           damageBase: targetActor.system.damageBase

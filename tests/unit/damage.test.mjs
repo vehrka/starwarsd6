@@ -2,7 +2,8 @@ import { describe, it, expect, vi } from "vitest";
 import {
   calculateDamageThresholds,
   resolveDamageTier,
-  applyDamage
+  applyDamage,
+  removeOneMark
 } from "../../modules/helpers/damage.mjs";
 
 /**
@@ -135,34 +136,36 @@ describe("applyDamage() — basic marking", () => {
 // applyDamage — overflow cascade
 // ──────────────────────────────────────────────────────────────────────────────
 describe("applyDamage() — overflow cascade", () => {
-  it("stun overflow: filling last stun box cascades to wound", async () => {
-    // hitBoxes=3, stunMarks=2 → adding 1 stun → stunMarks reaches 3 → cascade to wound
-    const actor = makeActor({ hitBoxes: 3, stunMarks: 2, woundMarks: 0 });
+  it("stun overflow: exceeding stun capacity cascades to wound", async () => {
+    // hitBoxes=3, stunMarks=3 (full) → adding 1 stun → stunMarks=4 > 3 → cascade to wound
+    const actor = makeActor({ hitBoxes: 3, stunMarks: 3, woundMarks: 0 });
     await applyDamage(actor, "stun");
     const call = actor.update.mock.calls[0][0];
     expect(call["system.stunMarks"]).toBe(3);
     expect(call["system.woundMarks"]).toBe(1);
   });
 
-  it("wound overflow: filling last wound box cascades to incap", async () => {
-    const actor = makeActor({ hitBoxes: 3, woundMarks: 2, incapMarks: 0 });
+  it("wound overflow: exceeding wound capacity cascades to incap", async () => {
+    // hitBoxes=3, woundMarks=3 (full) → adding 1 wound → woundMarks=4 > 3 → cascade to incap
+    const actor = makeActor({ hitBoxes: 3, woundMarks: 3, incapMarks: 0 });
     await applyDamage(actor, "wound");
     const call = actor.update.mock.calls[0][0];
     expect(call["system.woundMarks"]).toBe(3);
     expect(call["system.incapMarks"]).toBe(1);
   });
 
-  it("incap overflow: filling last incap box cascades to mortal", async () => {
-    const actor = makeActor({ hitBoxes: 3, incapMarks: 2, mortalMarks: 0 });
+  it("incap overflow: exceeding incap capacity cascades to mortal", async () => {
+    // hitBoxes=3, incapMarks=3 (full) → adding 1 incap → incapMarks=4 > 3 → cascade to mortal
+    const actor = makeActor({ hitBoxes: 3, incapMarks: 3, mortalMarks: 0 });
     await applyDamage(actor, "incap");
     const call = actor.update.mock.calls[0][0];
     expect(call["system.incapMarks"]).toBe(3);
     expect(call["system.mortalMarks"]).toBe(1);
   });
 
-  it("chain cascade: stun overflow fills wound which cascades to incap", async () => {
-    // hitBoxes=2, stunMarks=1, woundMarks=1 → stun+1=2 (overflow) → wound+1=2 (overflow) → incap+1
-    const actor = makeActor({ hitBoxes: 2, stunMarks: 1, woundMarks: 1, incapMarks: 0 });
+  it("chain cascade: stun overflow cascades to wound which cascades to incap", async () => {
+    // hitBoxes=2, stunMarks=2 (full), woundMarks=2 (full) → stun+1=3 > 2 → wound+1=3 > 2 → incap+1
+    const actor = makeActor({ hitBoxes: 2, stunMarks: 2, woundMarks: 2, incapMarks: 0 });
     await applyDamage(actor, "stun");
     const call = actor.update.mock.calls[0][0];
     expect(call["system.stunMarks"]).toBe(2);
@@ -185,5 +188,49 @@ describe("applyDamage() — invalid tier", () => {
   it("throws for unknown tier", async () => {
     const actor = makeActor();
     await expect(applyDamage(actor, "unknown")).rejects.toThrow('applyDamage: unknown tier "unknown"');
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// heal then damage — round-trip symmetry
+// Regression: >= cascade caused pre-existing full tiers to cascade spuriously
+// after removeOneMark, making damage permanently mis-apply after any healing.
+// ──────────────────────────────────────────────────────────────────────────────
+describe("removeOneMark() then applyDamage() — round-trip", () => {
+  it("heal one stun then mark another stun: no cascade when tier is not full", async () => {
+    // hitBoxes=3, stunMarks=3 (full) → heal 1 → stunMarks=2 → apply stun → stunMarks=3, no cascade
+    const actor = makeActor({ hitBoxes: 3, stunMarks: 3, woundMarks: 0 });
+    await removeOneMark(actor, "stun");
+    // Simulate actor state after removeOneMark
+    actor.system.stunMarks = 2;
+    actor.update.mockClear();
+
+    await applyDamage(actor, "stun");
+    const call = actor.update.mock.calls[0][0];
+    expect(call["system.stunMarks"]).toBe(3);
+    expect(call["system.woundMarks"]).toBe(0); // no cascade — tier not exceeded
+  });
+
+  it("heal one wound then apply wound: no cascade when tier is not full", async () => {
+    // hitBoxes=2, woundMarks=2 (full) → heal 1 → woundMarks=1 → apply wound → woundMarks=2, no cascade
+    const actor = makeActor({ hitBoxes: 2, stunMarks: 0, woundMarks: 2, incapMarks: 0 });
+    await removeOneMark(actor, "wound");
+    actor.system.woundMarks = 1;
+    actor.update.mockClear();
+
+    await applyDamage(actor, "wound");
+    const call = actor.update.mock.calls[0][0];
+    expect(call["system.woundMarks"]).toBe(2);
+    expect(call["system.incapMarks"]).toBe(0); // no cascade
+  });
+
+  it("full stun tier does not cascade when wound is applied", async () => {
+    // hitBoxes=2, stunMarks=2 (full), woundMarks=0 → apply wound → woundMarks=1, stun unchanged
+    const actor = makeActor({ hitBoxes: 2, stunMarks: 2, woundMarks: 0 });
+    await applyDamage(actor, "wound");
+    const call = actor.update.mock.calls[0][0];
+    expect(call["system.stunMarks"]).toBe(2); // untouched
+    expect(call["system.woundMarks"]).toBe(1);
+    expect(call["system.incapMarks"]).toBe(0); // no spurious cascade from stun
   });
 });
