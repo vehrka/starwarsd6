@@ -13,7 +13,9 @@ import CharacterSheet from "./modules/apps/character-sheet.mjs";
 import NpcSheet from "./modules/apps/npc-sheet.mjs";
 import SkillSheet from "./modules/apps/skill-sheet.mjs";
 import ItemSheet from "./modules/apps/item-sheet.mjs";
-import { rollExtraDie } from "./modules/helpers/dice.mjs";
+import { rollExtraDie, rollDamage } from "./modules/helpers/dice.mjs";
+import { applyDamage, resolveDamageTier } from "./modules/helpers/damage.mjs";
+import { handleSocketMessage, requestApplyDamage } from "./modules/helpers/socket.mjs";
 
 Hooks.once("init", () => {
   CONFIG.Actor.documentClass = CharacterActor;
@@ -100,7 +102,93 @@ Hooks.once("init", () => {
   // Clear fpSpentThisRound for all combatants when the round advances
   Hooks.on("combatRound", (combat, _updateData, _options) => {
     combat.combatants.forEach(c => {
-      c.actor?.unsetFlag("starwarsd6", "fpSpentThisRound");
+      c.actor?.setFlag("starwarsd6", "fpSpentThisRound", false);
     });
   });
+
+  // Roll Damage button — appears on attack chat cards when the roll is a hit with a target
+  Hooks.on("renderChatMessageHTML", (message, html) => {
+    html.querySelectorAll(".roll-damage-btn:not([disabled])").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const targetActorId = btn.dataset.targetActorId;
+        const damageDice    = parseInt(btn.dataset.damageDice);
+        const damagePips    = parseInt(btn.dataset.damagePips);
+        const damageBase    = parseInt(btn.dataset.damageBase);
+
+        const damageTotal = await rollDamage(damageDice, damagePips);
+        const tier = resolveDamageTier(damageTotal, damageBase);
+
+        // Disable button immediately to prevent double-click
+        btn.disabled = true;
+
+        // Update chat message in place — same DOMParser pattern as the CP spend above
+        const msgId = btn.closest("[data-message-id]").dataset.messageId;
+        const chatMsg = game.messages.get(msgId);
+        if (!chatMsg) return;
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(chatMsg.content, "text/html");
+
+        // Disable the roll-damage-btn in stored content
+        const dmgBtn = doc.querySelector(".roll-damage-btn");
+        if (dmgBtn) dmgBtn.setAttribute("disabled", "disabled");
+
+        // Append damage result section
+        const resultEl = doc.querySelector(".starwarsd6.roll-result");
+        if (resultEl) {
+          const dmgSection = doc.createElement("div");
+          dmgSection.className = "damage-result";
+          const tierKey = tier.charAt(0).toUpperCase() + tier.slice(1);
+          const tierLabel = game.i18n.localize(`STARWARSD6.Combat.${tierKey}`);
+          dmgSection.innerHTML = `
+            <div class="damage-total"><strong>${game.i18n.localize("STARWARSD6.Combat.DamageTotal")}: ${damageTotal}</strong>
+              — <span class="damage-tier">${tierLabel}</span>
+            </div>
+            <div class="mark-hit-box-action">
+              <button type="button" class="mark-hit-box-btn"
+                      data-target-actor-id="${targetActorId}"
+                      data-tier="${tier}">
+                ${game.i18n.localize("STARWARSD6.Combat.MarkHitBox")}
+              </button>
+            </div>`;
+          resultEl.appendChild(dmgSection);
+        }
+
+        await chatMsg.update({ content: doc.body.innerHTML });
+      });
+    });
+
+    // Mark Hit Box button — GM applies damage directly; non-GM sends socket request
+    html.querySelectorAll(".mark-hit-box-btn:not([disabled])").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const targetActorId = btn.dataset.targetActorId;
+        const tier = btn.dataset.tier;
+
+        // Disable immediately to prevent double-click
+        btn.disabled = true;
+
+        if (game.user.isGM) {
+          const actor = game.actors.get(targetActorId);
+          if (actor) await applyDamage(actor, tier);
+        } else {
+          requestApplyDamage(targetActorId, tier);
+        }
+
+        // Persist disabled state in stored message content
+        const msgId = btn.closest("[data-message-id]").dataset.messageId;
+        const chatMsg = game.messages.get(msgId);
+        if (!chatMsg) return;
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(chatMsg.content, "text/html");
+        const markBtn = doc.querySelector(".mark-hit-box-btn");
+        if (markBtn) markBtn.setAttribute("disabled", "disabled");
+        await chatMsg.update({ content: doc.body.innerHTML });
+      });
+    });
+  });
+});
+
+// Register socket handler in "ready" — game.socket is not available in "init"
+Hooks.once("ready", () => {
+  game.socket.on("system.starwarsd6", handleSocketMessage);
 });

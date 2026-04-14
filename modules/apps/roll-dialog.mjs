@@ -23,6 +23,7 @@ export default class RollDialog extends HandlebarsApplicationMixin(foundry.appli
   #canSpendFP = false;
   #hasFP = false;
   #isForceRoll = false;
+  #noTarget = false;
 
   /**
    * Open a roll dialog and wait for the user's input.
@@ -30,15 +31,17 @@ export default class RollDialog extends HandlebarsApplicationMixin(foundry.appli
    * @param {boolean} [options.canSpendFP=false]   Whether the FP checkbox should appear
    * @param {boolean} [options.hasFP=false]        Whether the actor has FP remaining
    * @param {boolean} [options.isForceRoll=false]  Whether to show Force difficulty modifier
-   * @returns {Promise<{ numActions: number, useForcePoint: boolean, forceDifficultyModifier: number }|null>}
+   * @param {boolean} [options.noTarget=false]     Whether to show the Difficulty number input
+   * @returns {Promise<{ numActions: number, useForcePoint: boolean, forceDifficultyModifier: number, difficulty: number|null }|null>}
    */
-  static async prompt({ canSpendFP = false, hasFP = false, isForceRoll = false, ...options } = {}) {
+  static async prompt({ canSpendFP = false, hasFP = false, isForceRoll = false, noTarget = false, ...options } = {}) {
     return new Promise(resolve => {
       const dialog = new RollDialog(options);
       dialog.#resolve = resolve;
       dialog.#canSpendFP = canSpendFP;
       dialog.#hasFP = hasFP;
       dialog.#isForceRoll = isForceRoll;
+      dialog.#noTarget = noTarget;
       dialog.render(true);
     });
   }
@@ -49,6 +52,7 @@ export default class RollDialog extends HandlebarsApplicationMixin(foundry.appli
     context.canSpendFP = this.#canSpendFP;
     context.hasFP = this.#hasFP;
     context.isForceRoll = this.#isForceRoll;
+    context.noTarget = this.#noTarget;
     return context;
   }
 
@@ -60,9 +64,12 @@ export default class RollDialog extends HandlebarsApplicationMixin(foundry.appli
     const forceDifficultyModifier = this.#isForceRoll
       ? Math.min(30, Math.max(0, parseInt(formData.object.forceDifficultyModifier ?? "0")))
       : 0;
+    const difficulty = this.#noTarget
+      ? Math.min(99, Math.max(0, parseInt(formData.object.difficulty ?? "0")))
+      : null;
     if (!this.#resolved) {
       this.#resolved = true;
-      this.#resolve({ numActions, useForcePoint, forceDifficultyModifier });
+      this.#resolve({ numActions, useForcePoint, forceDifficultyModifier, difficulty });
     }
   }
 

@@ -271,6 +271,19 @@ Each damage tier imposes cumulative penalties:
 | Incapacitated    | −2D to all skill/attribute rolls per incap mark | If incap marks = incap boxes → character is **mortally wounded** (add 1 mortal mark) |
 | Mortally Wounded | −3D to all skill/attribute rolls per mortal mark | If mortal marks = mortal boxes → character is **dead** |
 
+### Targeted Combat Resolution (Automated)
+
+When a player has a token targeted before clicking Roll Attack:
+
+1. The system reads the **target actor's** defense value (ranged/melee/brawling based on weapon skill).
+2. The chat card shows the target name, defense value, and hit/miss result automatically.
+3. On a **hit**, a "Roll Damage" button appears. Clicking it rolls the weapon's flat damage dice (no wild die) and shows the resulting tier (Stun/Wound/Incap/Mortal).
+4. A "Mark Hit Box" button applies one mark to the target's appropriate tier, with cascade overflow. This button is GM-only; non-GM players trigger a socket request that the GM client fulfills.
+
+With **no target** selected, a Difficulty field appears in the roll dialog. The roll resolves against that number. No damage button is shown — the GM adjudicates damage manually.
+
+Only the **first** targeted token is used when multiple tokens are targeted.
+
 ---
 
 ## Healing

@@ -26,6 +26,7 @@
       "forcePower": {}
     }
   },
+  "socket": true,
   "languages": [
     {
       "lang": "en",

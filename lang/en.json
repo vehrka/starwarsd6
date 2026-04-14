@@ -155,5 +155,12 @@
   "STARWARSD6.ForcePower.DarkSide": "Dark Side",
   "STARWARSD6.ForcePower.DarkSideWarningBadge": "Automatically grants a Dark Side Point",
   "STARWARSD6.ForcePower.TimeToUse": "Time to Use",
-  "STARWARSD6.ForcePower.Effect": "Effect"
+  "STARWARSD6.ForcePower.Effect": "Effect",
+  "STARWARSD6.Combat.Target": "Target",
+  "STARWARSD6.Combat.Difficulty": "Difficulty",
+  "STARWARSD6.Combat.RollDamage": "Roll Damage",
+  "STARWARSD6.Combat.MarkHitBox": "Mark Hit Box",
+  "STARWARSD6.Combat.DamageTotal": "Damage",
+  "STARWARSD6.Combat.DamageTier": "Tier",
+  "STARWARSD6.Combat.NoTarget": "No target selected"
 }

@@ -18,6 +18,12 @@
     <input type="number" name="forceDifficultyModifier" value="0" min="0" max="30" />
   </div>
   {{/if}}
+  {{#if noTarget}}
+  <div class="form-group">
+    <label>{{localize "STARWARSD6.Combat.Difficulty"}}</label>
+    <input type="number" name="difficulty" value="0" min="0" max="99" />
+  </div>
+  {{/if}}
   <footer class="sheet-footer form-footer">
     <button type="submit" class="default">
       <i class="fas fa-dice"></i>

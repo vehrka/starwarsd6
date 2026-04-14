@@ -1,5 +1,5 @@
-import { rollWithWildDie } from "../helpers/dice.mjs";
-import { applyDamage, removeOneMark } from "../helpers/damage.mjs";
+import { rollWithWildDie, rollDamage } from "../helpers/dice.mjs";
+import { applyDamage, removeOneMark, resolveDamageTier } from "../helpers/damage.mjs";
 import { applyDarkSidePoint } from "../helpers/force.mjs";
 import RollDialog from "./roll-dialog.mjs";
 
@@ -188,7 +188,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     if (useForcePoint) {
       await this.document.update({ "system.forcePoints": Math.max(0, fp - 1) });
-      await this.document.setFlag("starwarsd6", "fpSpentThisRound", true);
+        await this.document.setFlag("starwarsd6", "fpSpentThisRound", true);
     }
 
     const keepUpPenalty = this.document.system.keepUpPenalty ?? 0;
@@ -231,7 +231,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     if (useForcePoint) {
       await this.document.update({ "system.forcePoints": Math.max(0, fp - 1) });
-      await this.document.setFlag("starwarsd6", "fpSpentThisRound", true);
+        await this.document.setFlag("starwarsd6", "fpSpentThisRound", true);
     }
 
     const keepUpPenalty = this.document.system.keepUpPenalty ?? 0;
@@ -358,16 +358,22 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     const skillDice = skillItem ? skillItem.system.dicePool : this.document.system.DEX.dice;
     const skillPips = skillItem ? skillItem.system.pips : this.document.system.DEX.pips;
 
+    // Detect target — game.user.targets is a plain Set<Token>
+    const targets = [...game.user.targets];
+    const targetToken = targets[0];
+    const targetActor = targetToken?.actor ?? null;
+    const noTarget = !targetActor;
+
     const fp = this.document.system.forcePoints;
     const fpSpent = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
-    const dialogResult = await RollDialog.prompt({ canSpendFP: !fpSpent, hasFP: fp > 0 });
+    const dialogResult = await RollDialog.prompt({ canSpendFP: !fpSpent, hasFP: fp > 0, noTarget });
     if (dialogResult === null) return;
 
-    const { numActions, useForcePoint } = dialogResult;
+    const { numActions, useForcePoint, difficulty } = dialogResult;
 
     if (useForcePoint) {
       await this.document.update({ "system.forcePoints": Math.max(0, fp - 1) });
-      await this.document.setFlag("starwarsd6", "fpSpentThisRound", true);
+        await this.document.setFlag("starwarsd6", "fpSpentThisRound", true);
     }
 
     const penaltyDice = this.document.system.penaltyDice;
@@ -378,26 +384,32 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     const rollResult = await rollWithWildDie(skillDice, skillPips, totalPenalty, undefined, { doubled: useForcePoint });
     rollResult.total = Math.max(0, rollResult.total - penaltyPips);
 
-    // Determine defense type for chat display
+    // Determine defense label and value
     const RANGED_SKILLS = ["blaster", "starship gunnery", "starfighter piloting"];
     const MELEE_SKILLS = ["melee combat"];
     let defenseLabel, defenseValue;
-    if (RANGED_SKILLS.includes(attackSkillName)) {
+
+    if (noTarget) {
+      defenseLabel = game.i18n.localize("STARWARSD6.Combat.Difficulty");
+      defenseValue = difficulty ?? 0;
+    } else if (RANGED_SKILLS.includes(attackSkillName)) {
       defenseLabel = game.i18n.localize("STARWARSD6.Combat.RangedDefense");
-      defenseValue = this.document.system.rangedDefense;
+      defenseValue = targetActor.system.rangedDefense;
     } else if (MELEE_SKILLS.includes(attackSkillName)) {
       defenseLabel = game.i18n.localize("STARWARSD6.Combat.MeleeDefense");
-      defenseValue = this.document.system.meleeDefense;
+      defenseValue = targetActor.system.meleeDefense;
     } else {
       defenseLabel = game.i18n.localize("STARWARSD6.Combat.BrawlingDefense");
-      defenseValue = this.document.system.brawlingDefense;
+      defenseValue = targetActor.system.brawlingDefense;
     }
 
+    const isHit = rollResult.total >= defenseValue;
     const cpNow = this.document.system.characterPoints;
     const fpSpentNow = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
 
     await CharacterSheet.#postAttackToChat(
-      this.document, weapon.name, rollResult, numActions, defenseLabel, defenseValue,
+      this.document, weapon, rollResult, numActions, defenseLabel, defenseValue,
+      targetActor, isHit,
       { cpAvailable: cpNow, fpSpentThisRound: fpSpentNow, keepUpPenalty, penaltyDice, penaltyPips }
     );
   }
@@ -472,16 +484,21 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
   /**
    * Post an attack roll result to chat, showing roll total vs. defense value.
    * @param {Actor} actor
-   * @param {string} weaponName
+   * @param {Item} weapon
    * @param {RollResult} result
    * @param {number} numActions
    * @param {string} defenseLabel
    * @param {number} defenseValue
+   * @param {Actor|null} targetActor
+   * @param {boolean} isHit
    * @param {object} [cpOptions={}]
    * @param {number} [cpOptions.cpAvailable=0]
    * @param {boolean} [cpOptions.fpSpentThisRound=false]
+   * @param {number} [cpOptions.keepUpPenalty=0]
+   * @param {number} [cpOptions.penaltyDice=0]
+   * @param {number} [cpOptions.penaltyPips=0]
    */
-  static async #postAttackToChat(actor, weaponName, result, numActions, defenseLabel, defenseValue, { cpAvailable = 0, fpSpentThisRound = false, keepUpPenalty = 0, penaltyDice = 0, penaltyPips = 0 } = {}) {
+  static async #postAttackToChat(actor, weapon, result, numActions, defenseLabel, defenseValue, targetActor, isHit, { cpAvailable = 0, fpSpentThisRound = false, keepUpPenalty = 0, penaltyDice = 0, penaltyPips = 0 } = {}) {
     const speaker = ChatMessage.getSpeaker({ actor });
     const effectiveDice = result.normalDice.length + 1;
 
@@ -502,7 +519,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     const penaltyStr = CharacterSheet.#buildPenaltyLines(numActions, keepUpPenalty, penaltyDice, penaltyPips);
 
-    const hit = result.total >= defenseValue
+    const hitLabel = isHit
       ? `<span class="hit">${game.i18n.localize("STARWARSD6.Combat.Hit")}</span>`
       : `<span class="miss">${game.i18n.localize("STARWARSD6.Combat.Miss")}</span>`;
 
@@ -519,26 +536,54 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
         </button>
       </div>`;
 
+    const targetLine = targetActor
+      ? `<div class="roll-target">${game.i18n.localize("STARWARSD6.Combat.Target")}: <strong>${targetActor.name}</strong></div>`
+      : "";
+
+    const rollDamageBtn = (isHit && targetActor)
+      ? `<div class="damage-action">
+           <button type="button" class="roll-damage-btn"
+                   data-target-actor-id="${targetActor.id}"
+                   data-damage-dice="${weapon.system.damageDice}"
+                   data-damage-pips="${weapon.system.damagePips}"
+                   data-damage-base="${targetActor.system.damageBase}">
+             ${game.i18n.localize("STARWARSD6.Combat.RollDamage")}
+           </button>
+         </div>`
+      : "";
+
+    const flags = (isHit && targetActor)
+      ? { starwarsd6: {
+          targetActorId: targetActor.id,
+          damageDice: weapon.system.damageDice,
+          damagePips: weapon.system.damagePips,
+          damageBase: targetActor.system.damageBase
+        }}
+      : {};
+
     const content = `
       <div class="starwarsd6 roll-result">
-        <h3>${game.i18n.localize("STARWARSD6.Combat.AttackRoll")}: ${weaponName}</h3>
+        <h3>${game.i18n.localize("STARWARSD6.Combat.AttackRoll")}: ${weapon.name}</h3>
+        ${targetLine}
         <div class="roll-formula">${effectiveDice}D${pipsStr}</div>
         ${penaltyStr}
         <div class="roll-dice">${normalStr}Wild: ${wildStr}${explosion}${complications}</div>
         <div class="roll-total"><strong>${game.i18n.localize("STARWARSD6.Roll.Total")}: <span class="total-value">${result.total}</span></strong></div>
-        <div class="roll-defense">${defenseLabel}: ${defenseValue} — ${hit}</div>
+        <div class="roll-defense">${defenseLabel}: ${defenseValue} — ${hitLabel}</div>
         ${cpButton}
+        ${rollDamageBtn}
       </div>`;
 
-    await ChatMessage.create({ speaker, content });
+    await ChatMessage.create({ speaker, content, flags });
   }
 
   /**
-   * Clear the fpSpentThisRound flag for out-of-combat "New Round" use.
+   * Clear the fpSpentThisRound flag and re-enable the CP spend button on recent chat messages
+   * belonging to this actor. Called by the "New Round" button in the sheet header.
    * @this {CharacterSheet}
    */
   static async #newRound(event, target) {
-    await this.document.unsetFlag("starwarsd6", "fpSpentThisRound");
+    await this.document.setFlag("starwarsd6", "fpSpentThisRound", false);
   }
 
   /**
@@ -567,7 +612,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     if (useForcePoint) {
       await this.document.update({ "system.forcePoints": Math.max(0, fp - 1) });
-      await this.document.setFlag("starwarsd6", "fpSpentThisRound", true);
+        await this.document.setFlag("starwarsd6", "fpSpentThisRound", true);
     }
 
     const keepUpPenalty = system.keepUpPenalty ?? 0;
