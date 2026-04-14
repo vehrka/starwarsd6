@@ -202,12 +202,9 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     );
     rollResult.total = Math.max(0, rollResult.total - penaltyPips);
 
-    const cpNow = this.document.system.characterPoints;
-    const fpSpentNow = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
-
     await CharacterSheet.#postRollToChat(
       this.document, skill.name, rollResult, numActions,
-      { cpAvailable: cpNow, fpSpentThisRound: fpSpentNow, keepUpPenalty, penaltyDice, penaltyPips }
+      { keepUpPenalty, penaltyDice, penaltyPips }
     );
   }
 
@@ -242,12 +239,9 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     const rollResult = await rollWithWildDie(attr.dice, attr.pips, penalty, undefined, { doubled: useForcePoint });
     rollResult.total = Math.max(0, rollResult.total - penaltyPips);
 
-    const cpNow = this.document.system.characterPoints;
-    const fpSpentNow = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
-
     await CharacterSheet.#postRollToChat(
       this.document, attrLabel, rollResult, numActions,
-      { cpAvailable: cpNow, fpSpentThisRound: fpSpentNow, keepUpPenalty, penaltyDice, penaltyPips }
+      { keepUpPenalty, penaltyDice, penaltyPips }
     );
   }
 
@@ -276,12 +270,10 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
    * @param {string} label  — Skill or attribute name
    * @param {RollResult} result
    * @param {number} numActions
-   * @param {object} [cpOptions={}]
-   * @param {number} [cpOptions.cpAvailable=0]
-   * @param {boolean} [cpOptions.fpSpentThisRound=false]
-   * @param {number} [cpOptions.keepUpPenalty=0]
+   * @param {object} [options={}]
+   * @param {number} [options.keepUpPenalty=0]
    */
-  static async #postRollToChat(actor, label, result, numActions, { cpAvailable = 0, fpSpentThisRound = false, keepUpPenalty = 0, penaltyDice = 0, penaltyPips = 0 } = {}) {
+  static async #postRollToChat(actor, label, result, numActions, { keepUpPenalty = 0, penaltyDice = 0, penaltyPips = 0 } = {}) {
     const speaker = ChatMessage.getSpeaker({ actor });
     const effectiveDice = result.normalDice.length + 1; // normal + wild
 
@@ -303,19 +295,6 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     const penaltyStr = CharacterSheet.#buildPenaltyLines(numActions, keepUpPenalty, penaltyDice, penaltyPips);
 
-    const cpDisabled = (cpAvailable <= 0 || fpSpentThisRound) ? " disabled" : "";
-    const cpLabel = game.i18n.localize("STARWARSD6.CP.SpendCP");
-    const cpCountLabel = cpAvailable > 0
-      ? ` (${cpAvailable} ${game.i18n.localize("STARWARSD6.Character.CharacterPoints")})`
-      : "";
-    const cpButton = `
-      <div class="cp-action">
-        <button type="button" class="spend-cp-btn" data-actor-id="${actor.id}"
-                data-roll-total="${result.total}"${cpDisabled}>
-          ${cpLabel}${cpCountLabel}
-        </button>
-      </div>`;
-
     const content = `
       <div class="starwarsd6 roll-result">
         <h3>${label}</h3>
@@ -323,7 +302,6 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
         ${penaltyStr}
         <div class="roll-dice">${normalStr}Wild: ${wildStr}${explosion}${complications}</div>
         <div class="roll-total"><strong>${game.i18n.localize("STARWARSD6.Roll.Total")}: <span class="total-value">${result.total}</span></strong></div>
-        ${cpButton}
       </div>`;
 
     await ChatMessage.create({ speaker, content });
@@ -404,13 +382,10 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     }
 
     const isHit = rollResult.total >= defenseValue;
-    const cpNow = this.document.system.characterPoints;
-    const fpSpentNow = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
-
     await CharacterSheet.#postAttackToChat(
       this.document, weapon, rollResult, numActions, defenseLabel, defenseValue,
       targetActor, isHit,
-      { cpAvailable: cpNow, fpSpentThisRound: fpSpentNow, keepUpPenalty, penaltyDice, penaltyPips }
+      { keepUpPenalty, penaltyDice, penaltyPips }
     );
   }
 
@@ -491,14 +466,12 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
    * @param {number} defenseValue
    * @param {Actor|null} targetActor
    * @param {boolean} isHit
-   * @param {object} [cpOptions={}]
-   * @param {number} [cpOptions.cpAvailable=0]
-   * @param {boolean} [cpOptions.fpSpentThisRound=false]
-   * @param {number} [cpOptions.keepUpPenalty=0]
-   * @param {number} [cpOptions.penaltyDice=0]
+   * @param {object} [options={}]
+   * @param {number} [options.keepUpPenalty=0]
+   * @param {number} [options.penaltyDice=0]
    * @param {number} [cpOptions.penaltyPips=0]
    */
-  static async #postAttackToChat(actor, weapon, result, numActions, defenseLabel, defenseValue, targetActor, isHit, { cpAvailable = 0, fpSpentThisRound = false, keepUpPenalty = 0, penaltyDice = 0, penaltyPips = 0 } = {}) {
+  static async #postAttackToChat(actor, weapon, result, numActions, defenseLabel, defenseValue, targetActor, isHit, { keepUpPenalty = 0, penaltyDice = 0, penaltyPips = 0 } = {}) {
     const speaker = ChatMessage.getSpeaker({ actor });
     const effectiveDice = result.normalDice.length + 1;
 
@@ -522,19 +495,6 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     const hitLabel = isHit
       ? `<span class="hit">${game.i18n.localize("STARWARSD6.Combat.Hit")}</span>`
       : `<span class="miss">${game.i18n.localize("STARWARSD6.Combat.Miss")}</span>`;
-
-    const cpDisabled = (cpAvailable <= 0 || fpSpentThisRound) ? " disabled" : "";
-    const cpLabel = game.i18n.localize("STARWARSD6.CP.SpendCP");
-    const cpCountLabel = cpAvailable > 0
-      ? ` (${cpAvailable} ${game.i18n.localize("STARWARSD6.Character.CharacterPoints")})`
-      : "";
-    const cpButton = `
-      <div class="cp-action">
-        <button type="button" class="spend-cp-btn" data-actor-id="${actor.id}"
-                data-roll-total="${result.total}"${cpDisabled}>
-          ${cpLabel}${cpCountLabel}
-        </button>
-      </div>`;
 
     const targetLine = targetActor
       ? `<div class="roll-target">${game.i18n.localize("STARWARSD6.Combat.Target")}: <strong>${targetActor.name}</strong></div>`
@@ -570,7 +530,6 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
         <div class="roll-dice">${normalStr}Wild: ${wildStr}${explosion}${complications}</div>
         <div class="roll-total"><strong>${game.i18n.localize("STARWARSD6.Roll.Total")}: <span class="total-value">${result.total}</span></strong></div>
         <div class="roll-defense">${defenseLabel}: ${defenseValue} — ${hitLabel}</div>
-        ${cpButton}
         ${rollDamageBtn}
       </div>`;
 
@@ -578,8 +537,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
   }
 
   /**
-   * Clear the fpSpentThisRound flag and re-enable the CP spend button on recent chat messages
-   * belonging to this actor. Called by the "New Round" button in the sheet header.
+   * Clear the fpSpentThisRound flag. Called by the "New Round" button in the sheet header.
    * @this {CharacterSheet}
    */
   static async #newRound(event, target) {
@@ -620,14 +578,11 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     const rollResult = await rollWithWildDie(totalDice, totalPips, penalty, undefined, { doubled: useForcePoint });
     rollResult.total = Math.max(0, rollResult.total - system.penaltyPips);
 
-    const cpNow = this.document.system.characterPoints;
-    const fpSpentNow = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
-
     const label = game.i18n.localize(`STARWARSD6.Force.Skill.${skillKey}`);
     await CharacterSheet.#postForceRollToChat(
       this.document, label, rollResult, numActions, keepUpPenalty,
       bonus, forceDifficultyModifier,
-      { cpAvailable: cpNow, fpSpentThisRound: fpSpentNow, penaltyDice: system.penaltyDice, penaltyPips: system.penaltyPips }
+      { penaltyDice: system.penaltyDice, penaltyPips: system.penaltyPips }
     );
   }
 
@@ -640,9 +595,8 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
    * @param {number} keepUpPenalty
    * @param {{ bonusDice: number, bonusPips: number }} bonus
    * @param {number} forceDifficultyModifier
-   * @param {object} [cpOptions={}]
    */
-  static async #postForceRollToChat(actor, label, result, numActions, keepUpPenalty, bonus, forceDifficultyModifier, { cpAvailable = 0, fpSpentThisRound = false, penaltyDice = 0, penaltyPips = 0 } = {}) {
+  static async #postForceRollToChat(actor, label, result, numActions, keepUpPenalty, bonus, forceDifficultyModifier, { penaltyDice = 0, penaltyPips = 0 } = {}) {
     const speaker = ChatMessage.getSpeaker({ actor });
     const effectiveDice = result.normalDice.length + 1;
 
@@ -669,19 +623,6 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
       : "";
     const penaltyStr = CharacterSheet.#buildPenaltyLines(numActions, keepUpPenalty, penaltyDice, penaltyPips);
 
-    const cpDisabled = (cpAvailable <= 0 || fpSpentThisRound) ? " disabled" : "";
-    const cpLabel = game.i18n.localize("STARWARSD6.CP.SpendCP");
-    const cpCountLabel = cpAvailable > 0
-      ? ` (${cpAvailable} ${game.i18n.localize("STARWARSD6.Character.CharacterPoints")})`
-      : "";
-    const cpButton = `
-      <div class="cp-action">
-        <button type="button" class="spend-cp-btn" data-actor-id="${actor.id}"
-                data-roll-total="${result.total}"${cpDisabled}>
-          ${cpLabel}${cpCountLabel}
-        </button>
-      </div>`;
-
     const content = `
       <div class="starwarsd6 roll-result">
         <h3>${label}</h3>
@@ -691,7 +632,6 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
         ${penaltyStr}
         <div class="roll-dice">${normalStr}Wild: ${wildStr}${explosion}${complications}</div>
         <div class="roll-total"><strong>${game.i18n.localize("STARWARSD6.Roll.Total")}: <span class="total-value">${result.total}</span></strong></div>
-        ${cpButton}
       </div>`;
 
     await ChatMessage.create({ speaker, content });

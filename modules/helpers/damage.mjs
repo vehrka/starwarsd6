@@ -72,16 +72,16 @@ export async function applyDamage(actor, tier) {
     throw new Error(`applyDamage: unknown tier "${tier}"`);
   }
 
-  // Overflow cascade: stun fills → wound, wound fills → incap, incap fills → mortal
-  if (stunMarks >= hitBoxes) {
+  // Overflow cascade: stun exceeds capacity → wound, wound exceeds → incap, incap exceeds → mortal
+  if (stunMarks > hitBoxes) {
     stunMarks = hitBoxes;
     woundMarks++;
   }
-  if (woundMarks >= hitBoxes) {
+  if (woundMarks > hitBoxes) {
     woundMarks = hitBoxes;
     incapMarks++;
   }
-  if (incapMarks >= hitBoxes) {
+  if (incapMarks > hitBoxes) {
     incapMarks = hitBoxes;
     mortalMarks++;
   }
