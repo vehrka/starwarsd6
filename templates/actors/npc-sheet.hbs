@@ -5,27 +5,70 @@
 
   <div class="sheet-body">
 
-    {{!-- STR Section --}}
+    {{!-- Attributes & Skills Section (combined) --}}
     <section class="npc-section">
-      <h3>{{localize "STARWARSD6.NPC.STR"}}</h3>
-      <div class="npc-row">
-        <div class="form-group">
-          <label>{{localize "STARWARSD6.Attribute.Dice"}}</label>
-          <input type="number" name="system.STR.dice" value="{{system.STR.dice}}" min="1" />
+      <h3>{{localize "STARWARSD6.NPC.Attributes"}}</h3>
+      {{#each attributeGroups as |group|}}
+        <div class="attribute-row">
+          <span class="attr-label">{{localize group.label}}</span>
+          <input type="number" name="system.{{group.key}}.dice" value="{{group.dice}}" min="1" />
+          <span>D</span>
+          <input type="number" name="system.{{group.key}}.pips" value="{{group.pips}}" min="0" max="2" />
+          <span class="base-value">({{group.baseValue}})</span>
+          <button type="button" data-action="rollAttribute" data-attribute-key="{{group.key}}"><i class="fas fa-dice"></i></button>
         </div>
-        <div class="form-group">
-          <label>{{localize "STARWARSD6.Attribute.Pips"}}</label>
-          <input type="number" name="system.STR.pips" value="{{system.STR.pips}}" min="0" max="2" />
-        </div>
-        <div class="form-group">
-          <label>{{localize "STARWARSD6.Attribute.BaseValue"}}</label>
-          <span class="derived-value">{{system.STR.baseValue}}</span>
-        </div>
+        {{#if group.skills.length}}
+          <table class="skills-table">
+            <tbody>
+              {{#each group.skills as |skill|}}
+              <tr class="item-row skill-row" data-item-id="{{skill.id}}">
+                <td class="skill-indent">{{skill.name}}</td>
+                <td>{{skill.dicePool}}D{{#if skill.pips}}+{{skill.pips}}{{/if}}</td>
+                <td><button type="button" data-action="rollSkill" data-skill-id="{{skill.id}}"><i class="fas fa-dice"></i></button></td>
+                <td><button type="button" class="item-delete" data-action="deleteItem" data-item-id="{{skill.id}}" title="Delete">✕</button></td>
+              </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        {{/if}}
+      {{/each}}
+      <div class="npc-row" style="margin-top: 0.5em;">
         <div class="form-group">
           <label>{{localize "STARWARSD6.Character.HitBoxes"}}</label>
           <span class="derived-value">{{system.hitBoxes}}</span>
         </div>
       </div>
+    </section>
+
+    {{!-- Weapons Section --}}
+    <section class="npc-section">
+      <h3>{{localize "STARWARSD6.NPC.Weapons"}}</h3>
+      {{#if weapons.length}}
+        <table class="inventory-table">
+          <thead>
+            <tr>
+              <th>{{localize "STARWARSD6.Skill.Name"}}</th>
+              <th>{{localize "STARWARSD6.NPC.AttackSkill"}}</th>
+              <th>{{localize "STARWARSD6.Item.Weapon.Damage"}}</th>
+              <th>{{localize "STARWARSD6.Combat.Roll"}}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each weapons as |weapon|}}
+            <tr class="item-row" data-item-id="{{weapon.id}}">
+              <td>{{weapon.name}}</td>
+              <td>{{weapon.attackSkill}}</td>
+              <td>{{weapon.damageDice}}D{{#if weapon.damagePips}}+{{weapon.damagePips}}{{/if}}</td>
+              <td><button type="button" data-action="rollAttack" data-weapon-id="{{weapon.id}}"><i class="fas fa-dice"></i></button></td>
+              <td><button type="button" class="item-delete" data-action="deleteItem" data-item-id="{{weapon.id}}" title="Delete">✕</button></td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      {{else}}
+        <p class="no-items">{{localize "STARWARSD6.Inventory.Empty"}}</p>
+      {{/if}}
     </section>
 
     {{!-- Defense Section --}}

@@ -32,7 +32,7 @@ function resolveTargetActor(tokenId, actorId) {
 }
 
 Hooks.once("init", () => {
-  CONFIG.Actor.documentClass = CharacterActor;
+  CONFIG.Actor.documentClasses = { character: CharacterActor, npc: NpcActor };
   CONFIG.Actor.dataModels = { character: CharacterData, npc: NpcData };
   CONFIG.Item.documentClass = SkillItem;
   CONFIG.Item.dataModels = {

@@ -447,6 +447,21 @@ Phase 9 (polish) — final cleanup, no hard dependencies
 
 ---
 
+## Phase 15 — NPC Attack Rolls, Attributes & Skills
+
+**Goal:** Expand the NPC sheet with all 6 attributes, skill items displayed under their parent attribute, and weapon attack rolls with full wild-die flow and chat output matching the PC flow.
+
+**Complexity:** M | **Dependencies:** Phase 6, Phase 8
+
+### Files modified:
+- `modules/actors/npc-data.mjs` — Added DEX/KNO/MEC/PER/TEC to `defineSchema()`; extended `prepareDerivedData()` for all 6 `baseValue`s + `penaltyDice`/`penaltyPips`
+- `modules/apps/npc-sheet.mjs` — Added `rollWithWildDie`/`RollDialog` imports; `ATTRIBUTE_KEYS`; `_prepareContext` builds `attributeGroups` (with inline skills) and `weapons`; actions `rollAttribute`, `rollSkill`, `rollAttack`, `deleteItem`; copied `#postRollToChat`, `#postAttackToChat`, `#buildPenaltyLines` from CharacterSheet (stripped of FP/CP/keepUpPenalty)
+- `templates/actors/npc-sheet.hbs` — Replaced standalone STR section with combined attributes+skills section; added weapons section before Defence
+- `lang/en.json` — Added `STARWARSD6.NPC.Attributes`, `.Weapons`, `.AttackSkill`, `.Formula`
+- `tests/unit/npc-data.test.mjs` — New; 9 tests covering all 6 `baseValue`s, `hitBoxes`, `penaltyDice`/`penaltyPips`
+
+---
+
 ## Out of Scope
 
 - Compendium packs (pre-built skill items, weapons)

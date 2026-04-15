@@ -21,26 +21,6 @@ A fully playable Star Wars D6 system for Foundry VTT v13, covering:
 
 ---
 
-## Development Status
-
-Implementation follows a phased plan in `doc/implementation-plan.md`.
-
-| Phase | Name | Status |
-|-------|------|--------|
-| 0 | Bug Fix — sheet renders | ✅ Done |
-| 1 | Skill Sheet & Data Expansion | ✅ Done |
-| 2 | Dice Engine (wild die, roll dialog, chat) | ✅ Done |
-| 3 | Item Types (weapon, armor, equipment) | ✅ Done |
-| 4 | Combat & Damage (defense, thresholds, hit boxes) | ✅ Done |
-| 5 | Character Points & Force Points | ✅ Done |
-| 6 | NPC Actor | ✅ Done |
-| 7 | Force System | ✅ Done |
-| 7.5 | Force Powers Item Type | ✅ Done |
-| 8 | Healing | ⬜ Pending |
-| 9 | Sheet Polish, CSS, Full Localization | ⬜ Pending |
-
----
-
 ## Tech Stack
 
 - **Platform:** FoundryVTT v13 (minimum v13, no legacy support)
