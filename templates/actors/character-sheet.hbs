@@ -129,6 +129,7 @@
               <th>{{localize "STARWARSD6.Skill.Rank"}}</th>
               <th>{{localize "STARWARSD6.Skill.DicePool"}}</th>
               <th>{{localize "STARWARSD6.Roll.Label"}}</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -140,6 +141,7 @@
               <td><button type="button" data-action="rollSkill" data-skill-id="{{skill.id}}">
                 <i class="fas fa-dice"></i>
               </button></td>
+              <td><button type="button" class="item-delete" data-action="deleteItem" data-item-id="{{skill.id}}" title="Delete">✕</button></td>
             </tr>
             {{/each}}
           </tbody>
