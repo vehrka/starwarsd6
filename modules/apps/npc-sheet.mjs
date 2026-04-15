@@ -37,7 +37,7 @@ export default class NpcSheet extends HandlebarsApplicationMixin(foundry.applica
       pips: sys[key].pips,
       baseValue: sys[key].baseValue,
       skills: this.document.items
-        .filter(i => i.type === "skill" && !i.system.isForce && i.system.attribute === key)
+        .filter(i => i.type === "skill" && i.system.attribute === key)
         .map(skill => ({
           id: skill.id,
           name: skill.name,

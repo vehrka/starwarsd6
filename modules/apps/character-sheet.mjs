@@ -65,7 +65,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
       key,
       label: `STARWARSD6.Attribute.${key}`,
       skills: this.document.items
-        .filter(i => i.type === "skill" && !i.system.isForce && i.system.attribute === key)
+        .filter(i => i.type === "skill" && i.system.attribute === key)
         .map(skill => ({
           id: skill.id,
           name: skill.name,
@@ -74,14 +74,6 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
           rank: skill.system.rank
         }))
     }));
-    context.forceSkills = this.document.items
-      .filter(i => i.type === "skill" && i.system.isForce)
-      .map(skill => ({
-        id: skill.id,
-        name: skill.name,
-        dicePool: skill.system.dicePool,
-        pips: skill.system.pips
-      }));
     context.weapons = this.document.items
       .filter(i => i.type === "weapon")
       .map(i => ({

@@ -30,9 +30,6 @@ const DEFAULT_SKILLS = [
   { name: "Medicine",                      attribute: "TEC" },
   { name: "Space Transports Repair",       attribute: "TEC" },
   { name: "Starfighter Repair",            attribute: "TEC" },
-  { name: "Control",  isForce: true },
-  { name: "Sense",    isForce: true },
-  { name: "Alter",    isForce: true }
 ];
 
 export default class CharacterActor extends Actor {
@@ -43,9 +40,7 @@ export default class CharacterActor extends Actor {
     const itemData = DEFAULT_SKILLS.map(skill => ({
       name: skill.name,
       type: "skill",
-      system: skill.isForce
-        ? { isForce: true, forceDice: 1, forcePips: 0 }
-        : { attribute: skill.attribute, rank: 0, isForce: false }
+      system: { attribute: skill.attribute, rank: 0 }
     }));
 
     await this.createEmbeddedDocuments("Item", itemData);
