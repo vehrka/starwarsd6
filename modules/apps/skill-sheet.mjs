@@ -11,6 +11,8 @@ export default class SkillSheet extends HandlebarsApplicationMixin(foundry.appli
     sheet: { template: "systems/starwarsd6/templates/items/skill-sheet.hbs" }
   };
 
+  get title() { return this.document.name; }
+
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     context.item = this.document;

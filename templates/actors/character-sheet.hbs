@@ -1,13 +1,9 @@
 <div class="starwarsd6 sheet actor character">
   <header class="sheet-header">
-    <input type="text" name="name" value="{{document.name}}" placeholder="Character Name" />
+    <div class="sheet-header-name">
+      <input type="text" name="name" value="{{document.name}}" placeholder="Character Name" />
+    </div>
     <div class="header-stats">
-      <span class="cp-display" title="{{localize 'STARWARSD6.Character.CharacterPoints'}}">
-        CP: <strong>{{system.characterPoints}}</strong>
-      </span>
-      <span class="fp-display" title="{{localize 'STARWARSD6.Character.ForcePoints'}}">
-        FP: <strong>{{system.forcePoints}}</strong>
-      </span>
       <button type="button" data-action="newRound" class="new-round-btn"
               title="{{localize 'STARWARSD6.Roll.NewRound'}}">
         {{localize "STARWARSD6.Roll.NewRound"}}
@@ -20,10 +16,6 @@
     <a class="item {{#if (eq tabs.primary 'attributes')}}active{{/if}}"
        data-action="tab" data-tab="attributes" data-group="primary">
       {{localize "STARWARSD6.Tab.Attributes"}}
-    </a>
-    <a class="item {{#if (eq tabs.primary 'skills')}}active{{/if}}"
-       data-action="tab" data-tab="skills" data-group="primary">
-      {{localize "STARWARSD6.Tab.Skills"}}
     </a>
     <a class="item {{#if (eq tabs.primary 'inventory')}}active{{/if}}"
        data-action="tab" data-tab="inventory" data-group="primary">
@@ -41,115 +33,74 @@
     {{/if}}
   </nav>
 
-  {{!-- ATTRIBUTES TAB --}}
+  {{!-- ATTRIBUTES + SKILLS TAB --}}
   <section class="tab {{#if (eq tabs.primary 'attributes')}}active{{/if}}"
            data-tab="attributes" data-group="primary">
-    <table class="attributes-table">
-      <thead>
-        <tr>
-          <th>{{localize "STARWARSD6.Attribute.Label"}}</th>
-          <th>{{localize "STARWARSD6.Attribute.Dice"}}</th>
-          <th>{{localize "STARWARSD6.Attribute.Pips"}}</th>
-          <th>{{localize "STARWARSD6.Attribute.BaseValue"}}</th>
-          <th>{{localize "STARWARSD6.Roll.Label"}}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{#each attributeEntries as |attr|}}
-        <tr>
-          <td>{{localize attr.label}}</td>
-          <td><input type="number" name="system.{{attr.key}}.dice" value="{{attr.dice}}" min="1" /></td>
-          <td><input type="number" name="system.{{attr.key}}.pips" value="{{attr.pips}}" min="0" max="2" /></td>
-          <td class="base-value">{{attr.baseValue}}</td>
-          <td><button type="button" data-action="rollAttribute" data-attribute-key="{{attr.key}}">
-            <i class="fas fa-dice"></i>
-          </button></td>
-        </tr>
-        {{/each}}
-      </tbody>
-    </table>
 
-    <div class="character-stats">
-      <div class="form-group">
+    <div class="attr-skills-grid">
+      {{#each attributeGroups as |group|}}
+      <div class="attr-column-block">
+
+        {{!-- Attribute header --}}
+        <div class="attr-header">
+          <button type="button" class="attr-roll-btn" data-action="rollAttribute"
+                  data-attribute-key="{{group.key}}"
+                  title="{{localize 'STARWARSD6.Roll.Label'}}">
+            <i class="fas fa-dice-d6"></i>
+          </button>
+          <span class="attr-name">{{localize group.label}}</span>
+          <span class="attr-dice">
+            <input type="number" name="system.{{group.key}}.dice" value="{{group.dice}}"
+                   min="1" class="attr-dice-input" />D+<input type="number" name="system.{{group.key}}.pips" value="{{group.pips}}"
+                   min="0" max="2" class="attr-pips-input" />
+          </span>
+        </div>
+
+        {{!-- Skills under this attribute --}}
+        {{#if group.skills.length}}
+        <ul class="skill-list">
+          {{#each group.skills as |skill|}}
+          <li class="skill-row">
+            <span class="skill-name">{{skill.name}}</span>
+            <span class="skill-pool">{{skill.dicePool}}D{{#if skill.pips}}+{{skill.pips}}{{/if}}</span>
+            <button type="button" class="skill-roll-btn" data-action="rollSkill"
+                    data-skill-id="{{skill.id}}" title="{{localize 'STARWARSD6.Roll.Label'}}">
+              <i class="fas fa-dice-d6"></i>
+            </button>
+            <button type="button" class="item-delete" data-action="deleteItem"
+                    data-item-id="{{skill.id}}" title="Delete">✕</button>
+          </li>
+          {{/each}}
+        </ul>
+        {{/if}}
+
+      </div>
+      {{/each}}
+    </div>
+
+    {{!-- Footer stats --}}
+    <div class="attr-footer">
+      <div class="attr-footer-group">
         <label>{{localize "STARWARSD6.Attribute.Move"}}</label>
-        <input type="number" name="system.move" value="{{system.move}}" min="0" />
+        <input type="number" name="system.move" value="{{system.move}}" min="0" class="stat-input" />
       </div>
-      <div class="form-group">
-        <label>{{localize "STARWARSD6.Character.HitBoxes"}}</label>
-        <span class="derived-value">{{system.hitBoxes}}</span>
-      </div>
-      <div class="form-group">
+      <div class="attr-footer-group">
         <label>{{localize "STARWARSD6.Character.ForceSensitive"}}</label>
         <input type="checkbox" name="system.forceSensitive" {{#if system.forceSensitive}}checked{{/if}} />
       </div>
-      <div class="form-group">
+      <div class="attr-footer-group">
         <label>{{localize "STARWARSD6.Character.CharacterPoints"}}</label>
-        <input type="number" name="system.characterPoints" value="{{system.characterPoints}}" min="0" />
+        <input type="number" name="system.characterPoints" value="{{system.characterPoints}}" min="0" class="stat-input" />
       </div>
-      <div class="form-group">
+      <div class="attr-footer-group">
         <label>{{localize "STARWARSD6.Character.ForcePoints"}}</label>
-        <input type="number" name="system.forcePoints" value="{{system.forcePoints}}" min="0" />
+        <input type="number" name="system.forcePoints" value="{{system.forcePoints}}" min="0" class="stat-input" />
       </div>
-      <div class="form-group">
+      <div class="attr-footer-group">
         <label>{{localize "STARWARSD6.Character.DarkSidePoints"}}</label>
-        <input type="number" name="system.darkSidePoints" value="{{system.darkSidePoints}}" min="0" />
+        <input type="number" name="system.darkSidePoints" value="{{system.darkSidePoints}}" min="0" class="stat-input" />
       </div>
     </div>
-
-    <div class="wound-tracking">
-      <div class="form-group">
-        <label>{{localize "STARWARSD6.Wound.StunMarks"}}</label>
-        <input type="number" name="system.stunMarks" value="{{system.stunMarks}}" min="0" />
-      </div>
-      <div class="form-group">
-        <label>{{localize "STARWARSD6.Wound.WoundMarks"}}</label>
-        <input type="number" name="system.woundMarks" value="{{system.woundMarks}}" min="0" />
-      </div>
-      <div class="form-group">
-        <label>{{localize "STARWARSD6.Wound.IncapMarks"}}</label>
-        <input type="number" name="system.incapMarks" value="{{system.incapMarks}}" min="0" />
-      </div>
-      <div class="form-group">
-        <label>{{localize "STARWARSD6.Wound.MortalMarks"}}</label>
-        <input type="number" name="system.mortalMarks" value="{{system.mortalMarks}}" min="0" />
-      </div>
-    </div>
-  </section>
-
-  {{!-- SKILLS TAB --}}
-  <section class="tab {{#if (eq tabs.primary 'skills')}}active{{/if}}"
-           data-tab="skills" data-group="primary">
-    {{#each attributeGroups as |group|}}
-      <h3>{{localize group.label}}</h3>
-      {{#if group.skills.length}}
-        <table class="skills-table">
-          <thead>
-            <tr>
-              <th>{{localize "STARWARSD6.Skill.Name"}}</th>
-              <th>{{localize "STARWARSD6.Skill.Rank"}}</th>
-              <th>{{localize "STARWARSD6.Skill.DicePool"}}</th>
-              <th>{{localize "STARWARSD6.Roll.Label"}}</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {{#each group.skills as |skill|}}
-            <tr class="item-row" data-item-id="{{skill.id}}">
-              <td>{{skill.name}}</td>
-              <td>{{skill.rank}}</td>
-              <td>{{skill.dicePool}}D{{#if skill.pips}}+{{skill.pips}}{{/if}}</td>
-              <td><button type="button" data-action="rollSkill" data-skill-id="{{skill.id}}">
-                <i class="fas fa-dice"></i>
-              </button></td>
-              <td><button type="button" class="item-delete" data-action="deleteItem" data-item-id="{{skill.id}}" title="Delete">✕</button></td>
-            </tr>
-            {{/each}}
-          </tbody>
-        </table>
-      {{else}}
-        <p class="no-skills">—</p>
-      {{/if}}
-    {{/each}}
 
   </section>
 
@@ -157,84 +108,99 @@
   <section class="tab {{#if (eq tabs.primary 'inventory')}}active{{/if}}"
            data-tab="inventory" data-group="primary">
 
-    <h3>{{localize "STARWARSD6.Inventory.Weapons"}}</h3>
+    {{!-- WEAPONS --}}
+    <div class="inv-section-header">
+      <span class="inv-section-name">{{localize "STARWARSD6.Inventory.Weapons"}}</span>
+      <span class="inv-col-label inv-col-damage">{{localize "STARWARSD6.Item.Weapon.Damage"}}</span>
+      <span class="inv-col-label inv-col-skill">{{localize "STARWARSD6.Item.Weapon.AttackSkill"}}</span>
+      <span class="inv-col-label inv-col-range">{{localize "STARWARSD6.Item.Weapon.Range"}}</span>
+      <span class="inv-col-label inv-col-equip">Equipped</span>
+      <span class="inv-col-delete"></span>
+    </div>
     {{#if weapons.length}}
-      <table class="inventory-table">
-        <thead>
-          <tr>
-            <th>{{localize "STARWARSD6.Skill.Name"}}</th>
-            <th>{{localize "STARWARSD6.Item.Weapon.Damage"}}</th>
-            <th>{{localize "STARWARSD6.Item.Weapon.AttackSkill"}}</th>
-            <th>{{localize "STARWARSD6.Item.Weapon.Range"}}</th>
-            <th>{{localize "STARWARSD6.Item.Equipped"}}</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {{#each weapons as |weapon|}}
-          <tr class="item-row" data-item-id="{{weapon.id}}">
-            <td>{{weapon.name}}</td>
-            <td>{{weapon.damageDice}}D{{#if weapon.damagePips}}+{{weapon.damagePips}}{{/if}}</td>
-            <td>{{weapon.attackSkill}}</td>
-            <td>{{weapon.range}}</td>
-            <td><button type="button" class="equip-toggle {{#if weapon.equipped}}equipped{{/if}}" data-action="toggleEquipped" data-item-id="{{weapon.id}}" title="{{localize 'STARWARSD6.Item.Equipped'}}">{{#if weapon.equipped}}✓{{else}}○{{/if}}</button></td>
-            <td><button type="button" class="item-delete" data-action="deleteItem" data-item-id="{{weapon.id}}" title="Delete">✕</button></td>
-          </tr>
-          {{/each}}
-        </tbody>
-      </table>
+    <ul class="inv-list">
+      {{#each weapons as |weapon|}}
+      <li class="inv-row">
+        <span class="inv-name">{{weapon.name}}</span>
+        <span class="inv-col-damage">{{weapon.damageDice}}D{{#if weapon.damagePips}}+{{weapon.damagePips}}{{/if}}</span>
+        <span class="inv-col-skill">{{weapon.attackSkill}}</span>
+        <span class="inv-col-range">{{weapon.range}}</span>
+        <span class="inv-col-equip">
+          <button type="button" class="equip-toggle {{#if weapon.equipped}}equipped{{/if}}"
+                  data-action="toggleEquipped" data-item-id="{{weapon.id}}"
+                  title="Equipped">{{#if weapon.equipped}}✓{{else}}○{{/if}}</button>
+        </span>
+        <span class="inv-col-delete">
+          <button type="button" class="item-delete" data-action="deleteItem"
+                  data-item-id="{{weapon.id}}" title="Delete">✕</button>
+        </span>
+      </li>
+      {{/each}}
+    </ul>
     {{else}}
-      <p class="no-items">{{localize "STARWARSD6.Inventory.Empty"}}</p>
+    <p class="no-items">{{localize "STARWARSD6.Inventory.Empty"}}</p>
     {{/if}}
 
-    <h3>{{localize "STARWARSD6.Inventory.Armor"}}</h3>
+    {{!-- ARMOR --}}
+    <div class="inv-section-header">
+      <span class="inv-section-name">{{localize "STARWARSD6.Inventory.Armor"}}</span>
+      <span class="inv-col-damage"></span>
+      <span class="inv-col-skill"></span>
+      <span class="inv-col-label inv-col-range">Bonus</span>
+      <span class="inv-col-label inv-col-equip">Equipped</span>
+      <span class="inv-col-delete"></span>
+    </div>
     {{#if armors.length}}
-      <table class="inventory-table">
-        <thead>
-          <tr>
-            <th>{{localize "STARWARSD6.Skill.Name"}}</th>
-            <th>{{localize "STARWARSD6.Item.Armor.ArmorBonus"}}</th>
-            <th>{{localize "STARWARSD6.Item.Equipped"}}</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {{#each armors as |armor|}}
-          <tr class="item-row" data-item-id="{{armor.id}}">
-            <td>{{armor.name}}</td>
-            <td>{{armor.armorBonus}}</td>
-            <td><button type="button" class="equip-toggle {{#if armor.equipped}}equipped{{/if}}" data-action="toggleEquipped" data-item-id="{{armor.id}}" title="{{localize 'STARWARSD6.Item.Equipped'}}">{{#if armor.equipped}}✓{{else}}○{{/if}}</button></td>
-            <td><button type="button" class="item-delete" data-action="deleteItem" data-item-id="{{armor.id}}" title="Delete">✕</button></td>
-          </tr>
-          {{/each}}
-        </tbody>
-      </table>
+    <ul class="inv-list">
+      {{#each armors as |armor|}}
+      <li class="inv-row">
+        <span class="inv-name">{{armor.name}}</span>
+        <span class="inv-col-damage"></span>
+        <span class="inv-col-skill"></span>
+        <span class="inv-col-range">{{armor.armorBonus}}</span>
+        <span class="inv-col-equip">
+          <button type="button" class="equip-toggle {{#if armor.equipped}}equipped{{/if}}"
+                  data-action="toggleEquipped" data-item-id="{{armor.id}}"
+                  title="Equipped">{{#if armor.equipped}}✓{{else}}○{{/if}}</button>
+        </span>
+        <span class="inv-col-delete">
+          <button type="button" class="item-delete" data-action="deleteItem"
+                  data-item-id="{{armor.id}}" title="Delete">✕</button>
+        </span>
+      </li>
+      {{/each}}
+    </ul>
     {{else}}
-      <p class="no-items">{{localize "STARWARSD6.Inventory.Empty"}}</p>
+    <p class="no-items">{{localize "STARWARSD6.Inventory.Empty"}}</p>
     {{/if}}
 
-    <h3>{{localize "STARWARSD6.Inventory.Equipment"}}</h3>
+    {{!-- EQUIPMENT --}}
+    <div class="inv-section-header">
+      <span class="inv-section-name">{{localize "STARWARSD6.Inventory.Equipment"}}</span>
+      <span class="inv-col-damage"></span>
+      <span class="inv-col-skill"></span>
+      <span class="inv-col-label inv-col-range">{{localize "STARWARSD6.Item.Equipment.Quantity"}}</span>
+      <span class="inv-col-equip"></span>
+      <span class="inv-col-delete"></span>
+    </div>
     {{#if equipment.length}}
-      <table class="inventory-table">
-        <thead>
-          <tr>
-            <th>{{localize "STARWARSD6.Skill.Name"}}</th>
-            <th>{{localize "STARWARSD6.Item.Equipment.Quantity"}}</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {{#each equipment as |eq|}}
-          <tr class="item-row" data-item-id="{{eq.id}}">
-            <td>{{eq.name}}</td>
-            <td>{{eq.quantity}}</td>
-            <td><button type="button" class="item-delete" data-action="deleteItem" data-item-id="{{eq.id}}" title="Delete">✕</button></td>
-          </tr>
-          {{/each}}
-        </tbody>
-      </table>
+    <ul class="inv-list">
+      {{#each equipment as |eq|}}
+      <li class="inv-row">
+        <span class="inv-name">{{eq.name}}</span>
+        <span class="inv-col-damage"></span>
+        <span class="inv-col-skill"></span>
+        <span class="inv-col-range">{{eq.quantity}}</span>
+        <span class="inv-col-equip"></span>
+        <span class="inv-col-delete">
+          <button type="button" class="item-delete" data-action="deleteItem"
+                  data-item-id="{{eq.id}}" title="Delete">✕</button>
+        </span>
+      </li>
+      {{/each}}
+    </ul>
     {{else}}
-      <p class="no-items">{{localize "STARWARSD6.Inventory.Empty"}}</p>
+    <p class="no-items">{{localize "STARWARSD6.Inventory.Empty"}}</p>
     {{/if}}
 
   </section>
@@ -243,140 +209,114 @@
   <section class="tab {{#if (eq tabs.primary 'combat')}}active{{/if}}"
            data-tab="combat" data-group="primary">
 
-    {{!-- Defense Values --}}
-    <h3>{{localize "STARWARSD6.Combat.Defense"}}</h3>
-    <table class="combat-defense-table">
-      <thead>
-        <tr>
-          <th>{{localize "STARWARSD6.Combat.RangedDefense"}}</th>
-          <th>{{localize "STARWARSD6.Combat.MeleeDefense"}}</th>
-          <th>{{localize "STARWARSD6.Combat.BrawlingDefense"}}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="defense-value">{{combatData.rangedDefense}}</td>
-          <td class="defense-value">{{combatData.meleeDefense}}</td>
-          <td class="defense-value">{{combatData.brawlingDefense}}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    {{!-- Damage Thresholds --}}
-    <h3>{{localize "STARWARSD6.Combat.DamageThresholds"}}</h3>
-    <table class="combat-defense-table">
-      <thead>
-        <tr>
-          <th>{{localize "STARWARSD6.Combat.Stun"}}</th>
-          <th>{{localize "STARWARSD6.Combat.Wound"}}</th>
-          <th>{{localize "STARWARSD6.Combat.Incap"}}</th>
-          <th>{{localize "STARWARSD6.Combat.Mortal"}}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="defense-value">{{combatData.thresholdStun}}</td>
-          <td class="defense-value">{{combatData.thresholdWound}}</td>
-          <td class="defense-value">{{combatData.thresholdIncap}}</td>
-          <td class="defense-value">{{combatData.thresholdMortal}}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    {{!-- Wound Penalties --}}
-    <h3>{{localize "STARWARSD6.Combat.Penalties"}}</h3>
-    <div class="combat-penalties">
-      <div class="form-group">
-        <label>{{localize "STARWARSD6.Combat.PenaltyDice"}}</label>
-        <span class="derived-value">{{combatData.penaltyDice}}</span>
-      </div>
-      <div class="form-group">
-        <label>{{localize "STARWARSD6.Combat.PenaltyPips"}}</label>
-        <span class="derived-value">{{combatData.penaltyPips}}</span>
-      </div>
-    </div>
-
-    {{!-- Hit Boxes --}}
-    <h3>{{localize "STARWARSD6.Combat.HitBoxes"}}</h3>
-    <div class="hit-box-tracker">
-
-      <div class="hit-box-row">
-        <span class="tier-label">{{localize "STARWARSD6.Combat.Stun"}}</span>
-        <div class="hit-boxes">
-          {{#each combatData.stunBoxes as |box|}}
-          <button type="button" class="hit-box {{#if box.marked}}marked{{/if}}"
-                  data-action="markHitBox" data-tier="stun"
-                  title="{{localize "STARWARSD6.Combat.Stun"}}"></button>
-          {{/each}}
-        </div>
-      </div>
-
-      <div class="hit-box-row">
-        <span class="tier-label">{{localize "STARWARSD6.Combat.Wound"}}</span>
-        <div class="hit-boxes">
-          {{#each combatData.woundBoxes as |box|}}
-          <button type="button" class="hit-box {{#if box.marked}}marked{{/if}}"
-                  data-action="markHitBox" data-tier="wound"
-                  title="{{localize "STARWARSD6.Combat.Wound"}}"></button>
-          {{/each}}
-        </div>
-      </div>
-
-      <div class="hit-box-row">
-        <span class="tier-label">{{localize "STARWARSD6.Combat.Incap"}}</span>
-        <div class="hit-boxes">
-          {{#each combatData.incapBoxes as |box|}}
-          <button type="button" class="hit-box {{#if box.marked}}marked{{/if}}"
-                  data-action="markHitBox" data-tier="incap"
-                  title="{{localize "STARWARSD6.Combat.Incap"}}"></button>
-          {{/each}}
-        </div>
-      </div>
-
-      <div class="hit-box-row">
-        <span class="tier-label">{{localize "STARWARSD6.Combat.Mortal"}}</span>
-        <div class="hit-boxes">
-          {{#each combatData.mortalBoxes as |box|}}
-          <button type="button" class="hit-box {{#if box.marked}}marked{{/if}}"
-                  data-action="markHitBox" data-tier="mortal"
-                  title="{{localize "STARWARSD6.Combat.Mortal"}}"></button>
-          {{/each}}
-        </div>
-      </div>
-
-    </div>
-    <p class="hit-box-hint">{{localize "STARWARSD6.Combat.HitBoxHint"}}</p>
-
-    {{!-- Attack Rolls --}}
+    {{!-- Section 1: Weapons --}}
     <h3>{{localize "STARWARSD6.Combat.Weapons"}}</h3>
     {{#if combatData.weapons.length}}
-      <table class="combat-weapons-table">
-        <thead>
-          <tr>
-            <th>{{localize "STARWARSD6.Skill.Name"}}</th>
-            <th>{{localize "STARWARSD6.Item.Weapon.Damage"}}</th>
-            <th>{{localize "STARWARSD6.Item.Weapon.AttackSkill"}}</th>
-            <th>{{localize "STARWARSD6.Combat.AttackRoll"}}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {{#each combatData.weapons as |weapon|}}
-          <tr>
-            <td>{{weapon.name}}</td>
-            <td>{{weapon.damageDice}}D{{#if weapon.damagePips}}+{{weapon.damagePips}}{{/if}}</td>
-            <td>{{weapon.attackSkill}}</td>
-            <td>
-              <button type="button" data-action="rollAttack" data-weapon-id="{{weapon.id}}">
-                {{localize "STARWARSD6.Combat.Roll"}}
-              </button>
-            </td>
-          </tr>
-          {{/each}}
-        </tbody>
-      </table>
+    <table class="combat-weapons-table">
+      <thead>
+        <tr>
+          <th>{{localize "STARWARSD6.Skill.Name"}}</th>
+          <th>{{localize "STARWARSD6.Item.Weapon.Damage"}}</th>
+          <th>{{localize "STARWARSD6.Item.Weapon.AttackSkill"}}</th>
+          <th>{{localize "STARWARSD6.Combat.AttackRoll"}}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each combatData.weapons as |weapon|}}
+        {{#if weapon.equipped}}
+        <tr>
+          <td>{{weapon.name}}</td>
+          <td>{{weapon.damageDice}}D{{#if weapon.damagePips}}+{{weapon.damagePips}}{{/if}}</td>
+          <td>{{weapon.attackSkillDisplay}}</td>
+          <td>
+            <button type="button" data-action="rollAttack" data-weapon-id="{{weapon.id}}">
+              {{localize "STARWARSD6.Combat.Roll"}}
+            </button>
+          </td>
+        </tr>
+        {{/if}}
+        {{/each}}
+      </tbody>
+    </table>
     {{else}}
-      <p class="no-items">{{localize "STARWARSD6.Inventory.Empty"}}</p>
+    <p class="no-items">{{localize "STARWARSD6.Inventory.Empty"}}</p>
     {{/if}}
+
+    {{!-- Section 2: Wounds --}}
+    <div class="combat-wounds-section">
+      <h3 class="wounds-caption">WOUNDS</h3>
+
+      {{!-- Defense values inline --}}
+      <div class="combat-defense-inline">
+        <span class="defense-label">{{localize "STARWARSD6.Combat.RangedDefense"}}</span>
+        <span class="defense-value">{{combatData.rangedDefense}}</span>
+        <span class="defense-label">{{localize "STARWARSD6.Combat.MeleeDefense"}}</span>
+        <span class="defense-value">{{combatData.meleeDefense}}</span>
+        <span class="defense-label">{{localize "STARWARSD6.Combat.BrawlingDefense"}}</span>
+        <span class="defense-value">{{combatData.brawlingDefense}}</span>
+      </div>
+
+      {{!-- 2x2 wound grid --}}
+      <div class="wound-grid">
+
+        {{!-- Stunned --}}
+        <div class="wound-cell">
+          <div class="wound-cell-header">
+            {{localize "STARWARSD6.Combat.Stun"}} ({{combatData.thresholdStun}})
+          </div>
+          <div class="hit-boxes">
+            {{#each combatData.stunBoxes as |box|}}
+            <button type="button" class="hit-box {{#if box.marked}}marked{{/if}}"
+                    data-action="markHitBox" data-tier="stun"></button>
+            {{/each}}
+          </div>
+          <div class="wound-consequence">{{combatData.hitBoxes}} = Unconscious</div>
+        </div>
+
+        {{!-- Wounded --}}
+        <div class="wound-cell">
+          <div class="wound-cell-header">
+            {{localize "STARWARSD6.Combat.Wound"}} ({{combatData.thresholdWound}})
+          </div>
+          <div class="hit-boxes">
+            {{#each combatData.woundBoxes as |box|}}
+            <button type="button" class="hit-box {{#if box.marked}}marked{{/if}}"
+                    data-action="markHitBox" data-tier="wound"></button>
+            {{/each}}
+          </div>
+          <div class="wound-consequence">{{combatData.hitBoxes}} = Incapacitated</div>
+        </div>
+
+        {{!-- Incapacitated --}}
+        <div class="wound-cell">
+          <div class="wound-cell-header">
+            {{localize "STARWARSD6.Combat.Incap"}} ({{combatData.thresholdIncap}})
+          </div>
+          <div class="hit-boxes">
+            {{#each combatData.incapBoxes as |box|}}
+            <button type="button" class="hit-box {{#if box.marked}}marked{{/if}}"
+                    data-action="markHitBox" data-tier="incap"></button>
+            {{/each}}
+          </div>
+          <div class="wound-consequence">{{combatData.hitBoxes}} = Mortally Wounded</div>
+        </div>
+
+        {{!-- Mortally Wounded --}}
+        <div class="wound-cell">
+          <div class="wound-cell-header">
+            {{localize "STARWARSD6.Combat.Mortal"}} ({{combatData.thresholdMortal}})
+          </div>
+          <div class="hit-boxes">
+            {{#each combatData.mortalBoxes as |box|}}
+            <button type="button" class="hit-box {{#if box.marked}}marked{{/if}}"
+                    data-action="markHitBox" data-tier="mortal"></button>
+            {{/each}}
+          </div>
+          <div class="wound-consequence">{{combatData.hitBoxes}} = Dead</div>
+        </div>
+
+      </div>{{!-- .wound-grid --}}
+    </div>{{!-- .combat-wounds-section --}}
 
   </section>
 

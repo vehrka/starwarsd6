@@ -19,7 +19,7 @@
 | 6 ✓ | NPC Actor | NPC DataModel and sheet | M | 4 |
 | 7 ✓ | Force System | Force skills, DSP, keep-up | L | 5 |
 | 7.5 ✓ | Force Powers Item | forcePower item type, keep-up drives penalty | M | 7 |
-| 8 | Targeted Combat Resolution | Auto-resolve attack vs. target defense; damage roll → hit box suggestion | M | 4, 6 |
+| 8 ✓ | Targeted Combat Resolution | Auto-resolve attack vs. target defense; damage roll → hit box suggestion | M | 4, 6 |
 | 9 | Sheet Polish | Tabs, CSS, localization | M | 4 |
 
 ---
@@ -410,6 +410,18 @@ game.socket.on("system.starwarsd6", async ({ action, targetActorId, tier }) => {
 - Force skill path (`#rollForceSkill`) and attack path (`#postAttackToChat`) are unaffected.
 
 **Files modified:** `modules/apps/roll-dialog.mjs`, `modules/apps/character-sheet.mjs`, `templates/dice/roll-dialog.hbs`, `lang/en.json`
+
+---
+
+## feat016 — PC Combat Tab Restyling ✅
+
+**Goal:** Restyle the Combat tab to match the reference layout: Weapons section first (equipped only, single row), then a WOUNDS section with inline defense values and a 2×2 wound-tier grid.
+
+**Files modified:** `templates/actors/character-sheet.hbs`, `styles/starwarsd6.css`, `modules/apps/character-sheet.mjs` (added `attackSkillDisplay` to each weapon entry in `combatData.weapons`)
+
+**Removed:** `combat-defense-table`, Damage Thresholds table, Wound Penalties block, `.hit-box-tracker`/`.hit-box-row`/`.tier-label` CSS, `.hit-box-hint` paragraph.
+
+**Added:** `.combat-wounds-section`, `.wounds-caption`, `.combat-defense-inline`, `.wound-grid` (CSS grid 1fr 1fr), `.wound-cell`, `.wound-cell-header`, `.wound-consequence`.
 
 ---
 

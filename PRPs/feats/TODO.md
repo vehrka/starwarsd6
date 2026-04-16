@@ -1,5 +1,5 @@
 - [x] NPCs Attack rolls
-- [ ] No need for Force check when creating new skills
+- [x] No need for Force check when creating new skills
 - [x] A button to Remove Skills from Character Sheet
 - [ ] Increase Rank without opening the skill sheet
 - [x] When rolling, add a field for the difficulty

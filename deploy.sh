@@ -2,7 +2,8 @@
 # Deploy the starwarsd6 system to the remote Foundry v13 server.
 # Usage: ./deploy.sh [--dry-run]
 
-set -euo pipefail
+# set -euo pipefail
+set -e
 
 REMOTE_HOST="vehrka"
 REMOTE_BASE="share/foundrydata_13/Data/systems/starwarsd6"

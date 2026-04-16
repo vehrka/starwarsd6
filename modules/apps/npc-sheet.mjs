@@ -25,6 +25,8 @@ export default class NpcSheet extends HandlebarsApplicationMixin(foundry.applica
     sheet: { template: "systems/starwarsd6/templates/actors/npc-sheet.hbs" }
   };
 
+  get title() { return this.document.name; }
+
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const sys = this.document.system;

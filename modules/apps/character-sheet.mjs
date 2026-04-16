@@ -33,6 +33,8 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     sheet: { template: "systems/starwarsd6/templates/actors/character-sheet.hbs" }
   };
 
+  get title() { return this.document.name; }
+
   // Instance property — declares default active tab per group
   tabGroups = { primary: "attributes" };
 
@@ -50,20 +52,15 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     const context = await super._prepareContext(options);
     // Expose current active tab to template — ApplicationV2 core doesn't inject this automatically
     context.tabs = this.tabGroups;
-    // Attributes tab data
-    context.attributeEntries = ATTRIBUTE_KEYS.map(key => ({
+    // Extra stats
+    context.system = this.document.system;
+    // Attributes + skills tab data — grouped by attribute
+    context.attributeGroups = ATTRIBUTE_KEYS.map(key => ({
       key,
       label: `STARWARSD6.Attribute.${key}`,
       dice: this.document.system[key].dice,
       pips: this.document.system[key].pips,
-      baseValue: this.document.system[key].baseValue
-    }));
-    // Extra stats
-    context.system = this.document.system;
-    // Skills tab data — grouped by parent attribute
-    context.attributeGroups = ATTRIBUTE_KEYS.map(key => ({
-      key,
-      label: `STARWARSD6.Attribute.${key}`,
+      baseValue: this.document.system[key].baseValue,
       skills: this.document.items
         .filter(i => i.type === "skill" && i.system.attribute === key)
         .map(skill => ({
@@ -154,7 +151,15 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
       thresholdWound:  `${sys.damageBase}\u2013${2 * sys.damageBase - 1}`,
       thresholdIncap:  `${2 * sys.damageBase}\u2013${3 * sys.damageBase - 1}`,
       thresholdMortal: `${3 * sys.damageBase}+`,
-      weapons:         context.weapons
+      weapons:         context.weapons.map(w => {
+        const skillItem = this.document.items.find(
+          i => i.type === "skill" && i.name.toLowerCase() === w.attackSkill.toLowerCase()
+        );
+        const skillDice = skillItem ? skillItem.system.dicePool : sys.DEX.dice;
+        const skillPips  = skillItem ? skillItem.system.pips     : sys.DEX.pips;
+        const attackSkillDisplay = skillPips > 0 ? `${skillDice}D+${skillPips}` : `${skillDice}D`;
+        return { ...w, attackSkillDisplay };
+      })
     };
 
     return context;
