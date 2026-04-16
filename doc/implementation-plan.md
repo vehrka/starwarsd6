@@ -455,6 +455,12 @@ Phase 0 (bug fix)
         └─► Phase 3 (item types)
               └─► Phase 4
 Phase 9 (polish) — final cleanup, no hard dependencies
+
+## feat019 ✅ — Character Sheet Footer Circle Counters
+
+**Goal:** Replace plain number inputs for CP, FP, DSP in Attributes tab footer with large circle counter design (+/− buttons flanking a circle with the value). Force tab DSP becomes circle + icon-only `+` button; FP becomes read-only circle.
+
+**Completed:** All counter-circle CSS added, incrementStat/decrementStat actions registered in CharacterSheet, templates updated. No DataModel changes.
 ```
 
 ---

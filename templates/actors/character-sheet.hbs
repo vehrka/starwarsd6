@@ -4,10 +4,6 @@
       <input type="text" name="name" value="{{document.name}}" placeholder="Character Name" />
     </div>
     <div class="header-stats">
-      <button type="button" data-action="newRound" class="new-round-btn"
-              title="{{localize 'STARWARSD6.Roll.NewRound'}}">
-        {{localize "STARWARSD6.Roll.NewRound"}}
-      </button>
     </div>
   </header>
 
@@ -88,17 +84,41 @@
         <label>{{localize "STARWARSD6.Character.ForceSensitive"}}</label>
         <input type="checkbox" name="system.forceSensitive" {{#if system.forceSensitive}}checked{{/if}} />
       </div>
-      <div class="attr-footer-group">
+      <div class="attr-footer-group counter-group">
+        <div class="counter-row">
+          <button type="button" class="counter-btn" data-action="decrementStat" data-field="characterPoints" title="−">
+            <i class="fas fa-minus"></i>
+          </button>
+          <div class="counter-circle">{{system.characterPoints}}</div>
+          <button type="button" class="counter-btn" data-action="incrementStat" data-field="characterPoints" title="+">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
         <label>{{localize "STARWARSD6.Character.CharacterPoints"}}</label>
-        <input type="number" name="system.characterPoints" value="{{system.characterPoints}}" min="0" class="stat-input" />
       </div>
-      <div class="attr-footer-group">
+      <div class="attr-footer-group counter-group">
+        <div class="counter-row">
+          <button type="button" class="counter-btn" data-action="decrementStat" data-field="forcePoints" title="−">
+            <i class="fas fa-minus"></i>
+          </button>
+          <div class="counter-circle">{{system.forcePoints}}</div>
+          <button type="button" class="counter-btn" data-action="incrementStat" data-field="forcePoints" title="+">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
         <label>{{localize "STARWARSD6.Character.ForcePoints"}}</label>
-        <input type="number" name="system.forcePoints" value="{{system.forcePoints}}" min="0" class="stat-input" />
       </div>
-      <div class="attr-footer-group">
+      <div class="attr-footer-group counter-group">
+        <div class="counter-row">
+          <button type="button" class="counter-btn" data-action="decrementStat" data-field="darkSidePoints" title="−">
+            <i class="fas fa-minus"></i>
+          </button>
+          <div class="counter-circle">{{system.darkSidePoints}}</div>
+          <button type="button" class="counter-btn" data-action="addDarkSidePoint" title="+">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
         <label>{{localize "STARWARSD6.Character.DarkSidePoints"}}</label>
-        <input type="number" name="system.darkSidePoints" value="{{system.darkSidePoints}}" min="0" class="stat-input" />
       </div>
     </div>
 
@@ -388,7 +408,9 @@
     {{/if}}
 
     {{!-- 3. Kept-Up Powers — skill-list pattern --}}
-    <h3>{{localize "STARWARSD6.Force.KeptUpPowers"}}</h3>
+    <div class="inv-section-header">
+      <span class="inv-section-name">{{localize "STARWARSD6.Force.KeptUpPowers"}}</span>
+    </div>
     {{#if forceData.keepUpPenalty}}
     <p class="keep-up-penalty-note">
       {{localize "STARWARSD6.Force.KeepUpPenaltyNote"}}: −{{forceData.keepUpPenalty}}D
@@ -412,13 +434,15 @@
 
     {{!-- 4. DSP / Force Points footer — attr-footer pattern --}}
     <div class="attr-footer">
-      <div class="attr-footer-group">
+      <div class="attr-footer-group counter-group">
+        <div class="counter-row">
+          <div class="counter-circle">{{forceData.dsp}}</div>
+          <button type="button" class="counter-btn" data-action="addDarkSidePoint"
+                  title="{{localize 'STARWARSD6.Force.AddDSP'}}">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
         <label>{{localize "STARWARSD6.Character.DarkSidePoints"}}</label>
-        <span class="derived-value">{{forceData.dsp}}</span>
-        <button type="button" data-action="addDarkSidePoint"
-                title="{{localize 'STARWARSD6.Force.AddDSP'}}">
-          {{localize "STARWARSD6.Force.AddDSP"}}
-        </button>
       </div>
       {{#if forceData.forceRollBonus}}
       <div class="attr-footer-group">
@@ -429,9 +453,11 @@
         </span>
       </div>
       {{/if}}
-      <div class="attr-footer-group">
+      <div class="attr-footer-group counter-group counter-group--readonly">
+        <div class="counter-row">
+          <div class="counter-circle">{{system.forcePoints}}</div>
+        </div>
         <label>{{localize "STARWARSD6.Character.ForcePoints"}}</label>
-        <span class="derived-value">{{system.forcePoints}}</span>
       </div>
     </div>
 

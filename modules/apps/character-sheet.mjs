@@ -25,7 +25,9 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
       deleteItem: CharacterSheet.#deleteItem,
       toggleEquipped: CharacterSheet.#toggleEquipped,
       toggleKeptUp: CharacterSheet.#toggleKeptUp,
-      newRound: CharacterSheet.#newRound
+      newRound: CharacterSheet.#newRound,
+      incrementStat: CharacterSheet.#incrementStat,
+      decrementStat: CharacterSheet.#decrementStat
     }
   };
 
@@ -660,6 +662,18 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
    */
   static async #addDarkSidePoint(event, target) {
     await applyDarkSidePoint(this.document);
+  }
+
+  static async #incrementStat(event, target) {
+    const field = target.dataset.field;
+    const current = foundry.utils.getProperty(this.document.system, field) ?? 0;
+    await this.document.update({ [`system.${field}`]: current + 1 });
+  }
+
+  static async #decrementStat(event, target) {
+    const field = target.dataset.field;
+    const current = foundry.utils.getProperty(this.document.system, field) ?? 0;
+    await this.document.update({ [`system.${field}`]: Math.max(0, current - 1) });
   }
 
   /**
