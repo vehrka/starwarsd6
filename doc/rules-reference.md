@@ -275,12 +275,13 @@ Each damage tier imposes cumulative penalties:
 
 When a player has a token targeted before clicking Roll Attack:
 
-1. The system reads the **target actor's** defense value (ranged/melee/brawling based on weapon skill).
-2. The chat card shows the target name, defense value, and hit/miss result automatically.
-3. On a **hit**, a "Roll Damage" button appears. Clicking it rolls the weapon's flat damage dice (no wild die) and shows the resulting tier (Stun/Wound/Incap/Mortal).
-4. A "Mark Hit Box" button applies one mark to the target's appropriate tier, with cascade overflow. This button is GM-only; non-GM players trigger a socket request that the GM client fulfills.
+1. The system reads the **target actor's** defense value (ranged/melee/brawling based on weapon skill) and pre-fills the **Difficulty** field in the roll dialog with that value.
+2. The Difficulty field is **editable** — adjust before rolling for range penalties, cover bonuses, called shots, aiming, or any other situational modifier. The roll resolves against the **edited** value, not the raw defense.
+3. The chat card shows the target name, the **effective difficulty used** (post-edit), and hit/miss result automatically.
+4. On a **hit**, a "Roll Damage" button appears. Clicking it rolls the weapon's flat damage dice (no wild die) and shows the resulting tier (Stun/Wound/Incap/Mortal).
+5. A "Mark Hit Box" button applies one mark to the target's appropriate tier, with cascade overflow. This button is GM-only; non-GM players trigger a socket request that the GM client fulfills.
 
-With **no target** selected, a Difficulty field appears in the roll dialog. The roll resolves against that number. No damage button is shown — the GM adjudicates damage manually.
+With **no target** selected, the Difficulty field is pre-filled with the skill's base value (`ceil(3.5 × skill_dice)`) and remains editable. No damage button is shown — the GM adjudicates damage manually.
 
 Only the **first** targeted token is used when multiple tokens are targeted.
 

@@ -184,8 +184,25 @@ export default class NpcSheet extends HandlebarsApplicationMixin(foundry.applica
     const targetActor = targetToken?.actor ?? null;
     const noTarget = !targetActor;
 
-    const defaultDifficulty = noTarget ? Math.ceil(3.5 * skillDice) : 0;
-    const dialogResult = await RollDialog.prompt({ showDifficulty: noTarget, defaultDifficulty });
+    // Compute defense pre-fill before opening dialog
+    const RANGED_SKILLS = ["blaster", "starship gunnery", "starfighter piloting"];
+    const MELEE_SKILLS  = ["melee combat"];
+    let defenseLabel, rawDefenseValue;
+    if (noTarget) {
+      defenseLabel = game.i18n.localize("STARWARSD6.Combat.Difficulty");
+      rawDefenseValue = Math.ceil(3.5 * skillDice);
+    } else if (RANGED_SKILLS.includes(attackSkillName)) {
+      defenseLabel = game.i18n.localize("STARWARSD6.Combat.RangedDefense");
+      rawDefenseValue = targetActor.system.rangedDefense;
+    } else if (MELEE_SKILLS.includes(attackSkillName)) {
+      defenseLabel = game.i18n.localize("STARWARSD6.Combat.MeleeDefense");
+      rawDefenseValue = targetActor.system.meleeDefense;
+    } else {
+      defenseLabel = game.i18n.localize("STARWARSD6.Combat.BrawlingDefense");
+      rawDefenseValue = targetActor.system.brawlingDefense;
+    }
+
+    const dialogResult = await RollDialog.prompt({ showDifficulty: true, defaultDifficulty: rawDefenseValue });
     if (dialogResult === null) return;
 
     const { numActions, difficulty } = dialogResult;
@@ -196,24 +213,7 @@ export default class NpcSheet extends HandlebarsApplicationMixin(foundry.applica
     const rollResult = await rollWithWildDie(skillDice, skillPips, totalPenalty);
     rollResult.total = Math.max(0, rollResult.total - penaltyPips);
 
-    const RANGED_SKILLS = ["blaster", "starship gunnery", "starfighter piloting"];
-    const MELEE_SKILLS  = ["melee combat"];
-    let defenseLabel, defenseValue;
-
-    if (noTarget) {
-      defenseLabel = game.i18n.localize("STARWARSD6.Combat.Difficulty");
-      defenseValue = difficulty ?? 0;
-    } else if (RANGED_SKILLS.includes(attackSkillName)) {
-      defenseLabel = game.i18n.localize("STARWARSD6.Combat.RangedDefense");
-      defenseValue = targetActor.system.rangedDefense;
-    } else if (MELEE_SKILLS.includes(attackSkillName)) {
-      defenseLabel = game.i18n.localize("STARWARSD6.Combat.MeleeDefense");
-      defenseValue = targetActor.system.meleeDefense;
-    } else {
-      defenseLabel = game.i18n.localize("STARWARSD6.Combat.BrawlingDefense");
-      defenseValue = targetActor.system.brawlingDefense;
-    }
-
+    const defenseValue = Number.isFinite(difficulty) && difficulty > 0 ? difficulty : 0;
     const isHit = rollResult.total >= defenseValue;
     await NpcSheet.#postAttackToChat(
       this.document, weapon, rollResult, numActions, defenseLabel, defenseValue,
