@@ -169,5 +169,13 @@
   "STARWARSD6.Combat.NoTarget": "No target selected",
   "STARWARSD6.RollDifficulty": "Difficulty",
   "STARWARSD6.RollSuccess": "Success",
-  "STARWARSD6.RollFailure": "Failure"
+  "STARWARSD6.RollFailure": "Failure",
+  "STARWARSD6.Tab.Bio": "Bio",
+  "STARWARSD6.Bio.CharacterType": "Character Type",
+  "STARWARSD6.Bio.CharacterName": "Character Name",
+  "STARWARSD6.Bio.Height": "Height",
+  "STARWARSD6.Bio.Weight": "Weight",
+  "STARWARSD6.Bio.Sex": "Sex",
+  "STARWARSD6.Bio.Age": "Age",
+  "STARWARSD6.Bio.Description": "Physical Description"
 }

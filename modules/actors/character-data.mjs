@@ -40,6 +40,12 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
         })
       }),
       keptUpPowers: new ArrayField(new StringField({ required: true, nullable: false, initial: "" })),
+      characterType: new StringField({ required: false, initial: "" }),
+      height:        new StringField({ required: false, initial: "" }),
+      weight:        new StringField({ required: false, initial: "" }),
+      sex:           new StringField({ required: false, initial: "" }),
+      age:           new StringField({ required: false, initial: "" }),
+      description:   new StringField({ required: false, initial: "" }),
       stunMarks:   new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
       woundMarks:  new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
       incapMarks:  new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),

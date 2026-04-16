@@ -690,3 +690,106 @@
   font-size: 0.85em;
   text-align: center;
 }
+
+/* ===== BIO TAB ===== */
+.starwarsd6.sheet .tab[data-tab="bio"] .bio-layout {
+  font-size: 1.1em;
+  padding: 4px 0;
+  overflow: hidden;
+}
+
+.starwarsd6.sheet .tab[data-tab="bio"] .bio-portrait-col {
+  float: left;
+  width: 90px;
+  height: 90px;
+  margin: 0 10px 6px 0;
+  flex-shrink: 0;
+}
+
+.starwarsd6.sheet .tab[data-tab="bio"] .bio-portrait {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  border: 1px solid #999;
+  cursor: pointer;
+  display: block;
+}
+
+.starwarsd6.sheet .tab[data-tab="bio"] .bio-portrait:hover {
+  border-color: #333;
+}
+
+.starwarsd6.sheet .tab[data-tab="bio"] .bio-fields {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.starwarsd6.sheet .tab[data-tab="bio"] .bio-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  border-bottom: 1px dotted #ddd;
+  padding-bottom: 2px;
+}
+
+.starwarsd6.sheet .tab[data-tab="bio"] .bio-row--inline {
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  border-bottom: 1px dotted #ddd;
+}
+
+.starwarsd6.sheet .tab[data-tab="bio"] .bio-row--description {
+  flex-direction: column;
+  align-items: flex-start;
+  border-bottom: none;
+}
+
+.starwarsd6.sheet .tab[data-tab="bio"] .bio-inline-group {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.starwarsd6.sheet .tab[data-tab="bio"] .bio-label {
+  font-weight: bold;
+  font-size: 0.85em;
+  color: #333;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.starwarsd6.sheet .tab[data-tab="bio"] .bio-input {
+  flex: 1;
+  border: none;
+  border-bottom: 1px solid #aaa;
+  background: transparent;
+  font-size: 0.9em;
+  padding: 0 2px;
+}
+
+.starwarsd6.sheet .tab[data-tab="bio"] .bio-input--short {
+  flex: 0 0 4em;
+  width: 4em;
+}
+
+.starwarsd6.sheet .tab[data-tab="bio"] .bio-name-display {
+  font-size: 0.9em;
+  color: #222;
+  border-bottom: 1px solid #ddd;
+  flex: 1;
+  padding: 0 2px;
+}
+
+.starwarsd6.sheet .tab[data-tab="bio"] .bio-textarea {
+  width: 100%;
+  min-height: 4em;
+  border: 1px solid #aaa;
+  background: transparent;
+  font-size: 0.85em;
+  resize: vertical;
+  padding: 4px;
+  box-sizing: border-box;
+  font-family: inherit;
+}

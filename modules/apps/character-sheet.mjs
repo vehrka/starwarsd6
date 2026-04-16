@@ -27,7 +27,8 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
       toggleKeptUp: CharacterSheet.#toggleKeptUp,
       newRound: CharacterSheet.#newRound,
       incrementStat: CharacterSheet.#incrementStat,
-      decrementStat: CharacterSheet.#decrementStat
+      decrementStat: CharacterSheet.#decrementStat,
+      editImage: CharacterSheet.#editImage
     }
   };
 
@@ -700,5 +701,16 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     await this.document.update({
       "system.keptUpPowers": current.filter((_, i) => i !== index)
     });
+  }
+
+  static async #editImage(_event, target) {
+    const attr = target.dataset.edit;
+    const current = foundry.utils.getProperty(this.document._source, attr);
+    const fp = new foundry.applications.apps.FilePicker.implementation({
+      current,
+      type: "image",
+      callback: path => this.document.update({ [attr]: path })
+    });
+    fp.browse(current);
   }
 }

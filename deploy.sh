@@ -10,8 +10,7 @@ REMOTE_BASE="share/foundrydata_13/Data/systems/starwarsd6"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 RSYNC_OPTS=(
-  --archive
-  --compress
+  -azP
   --delete
   --exclude="tests/"
   --exclude="doc/"
@@ -27,6 +26,7 @@ if [[ "${1:-}" == "--dry-run" ]]; then
   echo "=== DRY RUN ==="
 fi
 
+# echo "rsync ${RSYNC_OPTS[*]} ${SCRIPT_DIR}/ ${REMOTE_HOST}:${REMOTE_BASE}/"
 rsync "${RSYNC_OPTS[@]}" \
   "${SCRIPT_DIR}/" \
   "${REMOTE_HOST}:${REMOTE_BASE}/"

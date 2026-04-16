@@ -9,6 +9,10 @@
 
   {{!-- Tab navigation --}}
   <nav class="sheet-tabs tabs" data-group="primary">
+    <a class="item {{#if (eq tabs.primary 'bio')}}active{{/if}}"
+       data-action="tab" data-tab="bio" data-group="primary">
+      {{localize "STARWARSD6.Tab.Bio"}}
+    </a>
     <a class="item {{#if (eq tabs.primary 'attributes')}}active{{/if}}"
        data-action="tab" data-tab="attributes" data-group="primary">
       {{localize "STARWARSD6.Tab.Attributes"}}
@@ -28,6 +32,68 @@
     </a>
     {{/if}}
   </nav>
+
+  {{!-- BIO TAB --}}
+  <section class="tab {{#if (eq tabs.primary 'bio')}}active{{/if}}"
+           data-tab="bio" data-group="primary">
+
+    <div class="bio-layout">
+
+      <div class="bio-portrait-col">
+        <img src="{{document.img}}"
+             data-action="editImage"
+             data-edit="img"
+             class="bio-portrait"
+             title="Click to change portrait" />
+      </div>
+
+      <div class="bio-fields">
+
+        <div class="bio-row">
+          <label class="bio-label">{{localize "STARWARSD6.Bio.CharacterType"}}</label>
+          <input type="text" name="system.characterType"
+                 value="{{system.characterType}}"
+                 class="bio-input" />
+        </div>
+
+        <div class="bio-row bio-row--inline">
+          <span class="bio-inline-group">
+            <label class="bio-label">{{localize "STARWARSD6.Bio.Height"}}</label>
+            <input type="text" name="system.height"
+                   value="{{system.height}}"
+                   class="bio-input bio-input--short" />
+          </span>
+          <span class="bio-inline-group">
+            <label class="bio-label">{{localize "STARWARSD6.Bio.Weight"}}</label>
+            <input type="text" name="system.weight"
+                   value="{{system.weight}}"
+                   class="bio-input bio-input--short" />
+          </span>
+          <span class="bio-inline-group">
+            <label class="bio-label">{{localize "STARWARSD6.Bio.Sex"}}</label>
+            <input type="text" name="system.sex"
+                   value="{{system.sex}}"
+                   class="bio-input bio-input--short" />
+          </span>
+          <span class="bio-inline-group">
+            <label class="bio-label">{{localize "STARWARSD6.Bio.Age"}}</label>
+            <input type="text" name="system.age"
+                   value="{{system.age}}"
+                   class="bio-input bio-input--short" />
+          </span>
+        </div>
+
+        <div class="bio-row bio-row--description">
+          <label class="bio-label">{{localize "STARWARSD6.Bio.Description"}}</label>
+          <textarea name="system.description"
+                    class="bio-textarea">{{system.description}}</textarea>
+        </div>
+
+      </div>{{!-- .bio-fields --}}
+
+    </div>{{!-- .bio-layout --}}
+
+  </section>
 
   {{!-- ATTRIBUTES + SKILLS TAB --}}
   <section class="tab {{#if (eq tabs.primary 'attributes')}}active{{/if}}"

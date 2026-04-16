@@ -480,6 +480,14 @@ Phase 9 (polish) — final cleanup, no hard dependencies
 
 ---
 
+## feat020 ✅ — Bio Tab: Character Identity Fields + Portrait
+
+**Goal:** Add a Bio tab to the PC character sheet with six identity StringFields (characterType, height, weight, sex, age, description), actor portrait with `data-edit="img"`, and matching layout from the paper sheet.
+
+**Completed:** Six StringFields added to CharacterData; `STARWARSD6.Tab.Bio` + 7 label keys added to en.json; Bio tab nav entry (first in nav) and panel section added to character-sheet.hbs; CSS scoped under `.starwarsd6.sheet .tab[data-tab="bio"]` appended to starwarsd6.css. No JS changes.
+
+---
+
 ## Out of Scope
 
 - Compendium packs (pre-built skill items, weapons)
