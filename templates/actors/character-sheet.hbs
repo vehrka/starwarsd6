@@ -325,38 +325,94 @@
   <section class="tab {{#if (eq tabs.primary 'force')}}active{{/if}}"
            data-tab="force" data-group="primary">
 
-    {{!-- Force Skills --}}
-    <h3>{{localize "STARWARSD6.Force.Skills"}}</h3>
-    <table class="force-skills-table">
-      <thead>
-        <tr>
-          <th>{{localize "STARWARSD6.Skill.Name"}}</th>
-          <th>{{localize "STARWARSD6.Attribute.Dice"}}</th>
-          <th>{{localize "STARWARSD6.Attribute.Pips"}}</th>
-          <th>{{localize "STARWARSD6.Roll.Label"}}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{#each forceData.skills as |skill|}}
-        <tr>
-          <td>{{skill.label}}</td>
-          <td><input type="number" name="system.forceSkills.{{skill.key}}.dice"
-                     value="{{skill.dice}}" min="0" /></td>
-          <td><input type="number" name="system.forceSkills.{{skill.key}}.pips"
-                     value="{{skill.pips}}" min="0" max="2" /></td>
-          <td><button type="button" data-action="rollForceSkill"
-                      data-skill-key="{{skill.key}}">
-            <i class="fas fa-dice"></i>
-          </button></td>
-        </tr>
-        {{/each}}
-      </tbody>
-    </table>
+    {{!-- 1. Force Skills — attr-header pattern, stacked single column --}}
+    {{#each forceData.skills as |skill|}}
+    <div class="attr-column-block">
+      <div class="attr-header">
+        <button type="button" class="attr-roll-btn" data-action="rollForceSkill"
+                data-skill-key="{{skill.key}}"
+                title="{{localize 'STARWARSD6.Roll.Label'}}">
+          <i class="fas fa-dice-d6"></i>
+        </button>
+        <span class="attr-name">{{skill.label}}</span>
+        <span class="attr-dice">
+          <input type="number" name="system.forceSkills.{{skill.key}}.dice"
+                 value="{{skill.dice}}" min="0" class="attr-dice-input" />D+<input
+                 type="number" name="system.forceSkills.{{skill.key}}.pips"
+                 value="{{skill.pips}}" min="0" max="2" class="attr-pips-input" />
+        </span>
+      </div>
+    </div>
+    {{/each}}
 
-    {{!-- Dark Side Points --}}
-    <h3>{{localize "STARWARSD6.Force.DarkSide"}}</h3>
-    <div class="force-dsp">
-      <div class="form-group">
+    {{!-- 2. Force Powers — inventory-style header + list --}}
+    <div class="inv-section-header">
+      <span class="inv-section-name">{{localize "STARWARSD6.ForcePower.Label"}}</span>
+      <span class="inv-col-label inv-col-damage">{{localize "STARWARSD6.Force.Skill.control"}}</span>
+      <span class="inv-col-label inv-col-skill">{{localize "STARWARSD6.Force.Skill.sense"}}</span>
+      <span class="inv-col-label inv-col-range">{{localize "STARWARSD6.Force.Skill.alter"}}</span>
+      <span class="inv-col-label inv-col-equip">{{localize "STARWARSD6.ForcePower.KeptUp"}}</span>
+      <span class="inv-col-delete"></span>
+    </div>
+    {{#if forceData.forcePowers.length}}
+    <ul class="inv-list">
+      {{#each forceData.forcePowers as |power|}}
+      <li class="inv-row item-row" data-item-id="{{power.id}}">
+        <span class="inv-name">
+          {{power.name}}
+          {{#if power.darkSideWarning}}
+          <span class="dsp-warning-badge" title="{{localize 'STARWARSD6.ForcePower.DarkSideWarningBadge'}}">⚠</span>
+          {{/if}}
+        </span>
+        <span class="inv-col-damage">{{power.controlDifficulty}}</span>
+        <span class="inv-col-skill">{{power.senseDifficulty}}</span>
+        <span class="inv-col-range">{{power.alterDifficulty}}</span>
+        <span class="inv-col-equip">
+          <button type="button"
+                  class="equip-toggle {{#if power.keptUp}}equipped{{/if}}"
+                  data-action="toggleKeptUp"
+                  data-item-id="{{power.id}}"
+                  title="{{localize 'STARWARSD6.ForcePower.KeptUp'}}">
+            {{#if power.keptUp}}✓{{else}}○{{/if}}
+          </button>
+        </span>
+        <span class="inv-col-delete">
+          <button type="button" class="item-delete" data-action="deleteItem"
+                  data-item-id="{{power.id}}" title="Delete">✕</button>
+        </span>
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <p class="no-items">{{localize "STARWARSD6.Inventory.Empty"}}</p>
+    {{/if}}
+
+    {{!-- 3. Kept-Up Powers — skill-list pattern --}}
+    <h3>{{localize "STARWARSD6.Force.KeptUpPowers"}}</h3>
+    {{#if forceData.keepUpPenalty}}
+    <p class="keep-up-penalty-note">
+      {{localize "STARWARSD6.Force.KeepUpPenaltyNote"}}: −{{forceData.keepUpPenalty}}D
+    </p>
+    {{/if}}
+    <ul class="skill-list">
+      {{#each forceData.keptUpPowerItems as |power|}}
+      <li class="skill-row">
+        <span class="skill-name">{{power.name}}</span>
+      </li>
+      {{/each}}
+      {{#each forceData.keptUpPowers as |power|}}
+      <li class="skill-row">
+        <span class="skill-name">{{power.name}}</span>
+        <button type="button" data-action="removeKeptUpPower"
+                data-power-index="{{power.index}}"
+                title="{{localize 'STARWARSD6.Force.RemovePower'}}">&#10005;</button>
+      </li>
+      {{/each}}
+    </ul>
+
+    {{!-- 4. DSP / Force Points footer — attr-footer pattern --}}
+    <div class="attr-footer">
+      <div class="attr-footer-group">
         <label>{{localize "STARWARSD6.Character.DarkSidePoints"}}</label>
         <span class="derived-value">{{forceData.dsp}}</span>
         <button type="button" data-action="addDarkSidePoint"
@@ -365,7 +421,7 @@
         </button>
       </div>
       {{#if forceData.forceRollBonus}}
-      <div class="form-group">
+      <div class="attr-footer-group">
         <label>{{localize "STARWARSD6.Force.DSPBonus"}}</label>
         <span class="derived-value">
           {{#if forceData.forceRollBonus.bonusDice}}+{{forceData.forceRollBonus.bonusDice}}D{{/if}}{{#if forceData.forceRollBonus.bonusPips}}+{{forceData.forceRollBonus.bonusPips}}{{/if}}
@@ -373,82 +429,11 @@
         </span>
       </div>
       {{/if}}
+      <div class="attr-footer-group">
+        <label>{{localize "STARWARSD6.Character.ForcePoints"}}</label>
+        <span class="derived-value">{{system.forcePoints}}</span>
+      </div>
     </div>
-
-    {{!-- Force Powers --}}
-    <h3>{{localize "STARWARSD6.ForcePower.Label"}}</h3>
-    {{#if forceData.forcePowers.length}}
-      <table class="force-powers-table">
-        <thead>
-          <tr>
-            <th>{{localize "STARWARSD6.Skill.Name"}}</th>
-            <th>{{localize "STARWARSD6.Force.Skill.control"}}</th>
-            <th>{{localize "STARWARSD6.Force.Skill.sense"}}</th>
-            <th>{{localize "STARWARSD6.Force.Skill.alter"}}</th>
-            <th>{{localize "STARWARSD6.ForcePower.CanKeepUp"}}</th>
-            <th>{{localize "STARWARSD6.ForcePower.KeptUp"}}</th>
-            <th>{{localize "STARWARSD6.ForcePower.DarkSide"}}</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {{#each forceData.forcePowers as |power|}}
-          <tr class="item-row" data-item-id="{{power.id}}">
-            <td>{{power.name}}</td>
-            <td>{{power.controlDifficulty}}</td>
-            <td>{{power.senseDifficulty}}</td>
-            <td>{{power.alterDifficulty}}</td>
-            <td class="center">{{#if power.canKeepUp}}✓{{else}}—{{/if}}</td>
-            <td class="center">
-              <button type="button"
-                      class="equip-toggle {{#if power.keptUp}}equipped{{/if}}"
-                      data-action="toggleKeptUp"
-                      data-item-id="{{power.id}}"
-                      title="{{localize 'STARWARSD6.ForcePower.KeptUp'}}">
-                {{#if power.keptUp}}✓{{else}}○{{/if}}
-              </button>
-            </td>
-            <td class="center">
-              {{#if power.darkSideWarning}}
-                <span class="dsp-warning-badge" title="{{localize 'STARWARSD6.ForcePower.DarkSideWarningBadge'}}">⚠</span>
-              {{/if}}
-            </td>
-            <td>
-              <button type="button" class="item-delete"
-                      data-action="deleteItem"
-                      data-item-id="{{power.id}}"
-                      title="Delete">✕</button>
-            </td>
-          </tr>
-          {{/each}}
-        </tbody>
-      </table>
-    {{else}}
-      <p class="no-items">{{localize "STARWARSD6.Inventory.Empty"}}</p>
-    {{/if}}
-
-    {{!-- Kept-Up Powers --}}
-    <h3>{{localize "STARWARSD6.Force.KeptUpPowers"}}</h3>
-    {{#if forceData.keepUpPenalty}}
-    <p class="keep-up-penalty-note">
-      {{localize "STARWARSD6.Force.KeepUpPenaltyNote"}}: −{{forceData.keepUpPenalty}}D
-    </p>
-    {{/if}}
-    <ul class="kept-up-powers-list">
-      {{#each forceData.keptUpPowerItems as |power|}}
-      <li>
-        <span>{{power.name}}</span>
-      </li>
-      {{/each}}
-      {{#each forceData.keptUpPowers as |power|}}
-      <li>
-        <span>{{power.name}}</span>
-        <button type="button" data-action="removeKeptUpPower"
-                data-power-index="{{power.index}}"
-                title="{{localize 'STARWARSD6.Force.RemovePower'}}">&#10005;</button>
-      </li>
-      {{/each}}
-    </ul>
 
   </section>
   {{/if}}

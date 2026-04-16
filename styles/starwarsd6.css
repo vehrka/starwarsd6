@@ -616,3 +616,23 @@
   flex: 1;
   resize: vertical;
 }
+
+/* ── Force tab overrides ─────────────────────────────────────── */
+
+/* Force Skills: remove underline from each skill row */
+.starwarsd6.sheet .tab[data-tab="force"] .attr-header {
+  border-bottom: none;
+}
+
+/* Force Skills: fixed-width name so dice inputs align across all three rows */
+.starwarsd6.sheet .tab[data-tab="force"] .attr-name {
+  width: 6em;
+  flex-shrink: 0;
+}
+
+/* Dark-side warning badge */
+.starwarsd6.sheet .dsp-warning-badge {
+  color: #c60;
+  font-size: 0.9em;
+  flex-shrink: 0;
+}

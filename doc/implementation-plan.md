@@ -20,7 +20,7 @@
 | 7 ✓ | Force System | Force skills, DSP, keep-up | L | 5 |
 | 7.5 ✓ | Force Powers Item | forcePower item type, keep-up drives penalty | M | 7 |
 | 8 ✓ | Targeted Combat Resolution | Auto-resolve attack vs. target defense; damage roll → hit box suggestion | M | 4, 6 |
-| 9 | Sheet Polish | Tabs, CSS, localization | M | 4 |
+| 9 ✓ | Sheet Polish | Force tab restyle to match Attributes & Skills | M | 4 |
 
 ---
 
@@ -425,9 +425,9 @@ game.socket.on("system.starwarsd6", async ({ action, targetActorId, tier }) => {
 
 ---
 
-## Phase 9 — Sheet Polish, CSS, Full Localization
+## Phase 9 ✓ — Sheet Polish, CSS, Full Localization
 
-**Goal:** Professional tabbed sheet, complete i18n, styled chat cards for rolls.
+**Goal:** Force tab restyled to match Attributes & Skills tab conventions (feat017). Tables replaced with flex-based attr-header / skill-list / attr-footer layout.
 
 **Complexity:** M | **Dependencies:** All previous phases
 
