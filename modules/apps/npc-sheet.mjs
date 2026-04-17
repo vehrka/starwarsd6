@@ -1,4 +1,5 @@
 import { rollWithWildDie } from "../helpers/dice.mjs";
+import { showDiceAnimation } from "../helpers/dsn.mjs";
 import { applyDamage, removeOneMark } from "../helpers/damage.mjs";
 import { calculateNpcDefense } from "../helpers/defense.mjs";
 import RollDialog from "./roll-dialog.mjs";
@@ -343,6 +344,7 @@ export default class NpcSheet extends HandlebarsApplicationMixin(foundry.applica
         ${difficultyStr}
       </div>`;
 
+    await showDiceAnimation(result.normalDice, result.wildRolls, "npc");
     await ChatMessage.create({ speaker, content });
   }
 
@@ -425,6 +427,7 @@ export default class NpcSheet extends HandlebarsApplicationMixin(foundry.applica
         ${rollDamageBtn}
       </div>`;
 
+    await showDiceAnimation(result.normalDice, result.wildRolls, "npc");
     await ChatMessage.create({ speaker, content, flags });
   }
 }

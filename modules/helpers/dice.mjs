@@ -71,10 +71,10 @@ export async function rollExtraDie(_rollFn = rollOneDie) {
  *
  * @param {number} dice  Number of d6s
  * @param {number} pips  Pip bonus
- * @returns {Promise<number>}
+ * @returns {Promise<{ total: number, roll: Roll }>}
  */
 export async function rollDamage(dice, pips) {
   const formula = pips > 0 ? `${dice}d6 + ${pips}` : `${dice}d6`;
-  const r = await new Roll(formula).evaluate();
-  return r.total;
+  const roll = await new Roll(formula).evaluate();
+  return { total: roll.total, roll };
 }

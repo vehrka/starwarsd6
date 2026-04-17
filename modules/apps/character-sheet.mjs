@@ -1,4 +1,5 @@
-import { rollWithWildDie, rollDamage } from "../helpers/dice.mjs";
+import { rollWithWildDie } from "../helpers/dice.mjs";
+import { showDiceAnimation } from "../helpers/dsn.mjs";
 import { applyDamage, removeOneMark, resolveDamageTier } from "../helpers/damage.mjs";
 import { applyDarkSidePoint } from "../helpers/force.mjs";
 import { calculateNpcDefense } from "../helpers/defense.mjs";
@@ -319,6 +320,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
         ${difficultyStr}
       </div>`;
 
+    await showDiceAnimation(result.normalDice, result.wildRolls, "character");
     await ChatMessage.create({ speaker, content });
   }
 
@@ -557,6 +559,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
         ${rollDamageBtn}
       </div>`;
 
+    await showDiceAnimation(result.normalDice, result.wildRolls, "character");
     await ChatMessage.create({ speaker, content, flags });
   }
 
@@ -658,6 +661,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
         <div class="roll-total"><strong>${game.i18n.localize("STARWARSD6.Roll.Total")}: <span class="total-value">${result.total}</span></strong></div>
       </div>`;
 
+    await showDiceAnimation(result.normalDice, result.wildRolls, "character");
     await ChatMessage.create({ speaker, content });
   }
 

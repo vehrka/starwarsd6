@@ -13,6 +13,7 @@ import NpcSheet from "./modules/apps/npc-sheet.mjs";
 import SkillSheet from "./modules/apps/skill-sheet.mjs";
 import ItemSheet from "./modules/apps/item-sheet.mjs";
 import { rollDamage } from "./modules/helpers/dice.mjs";
+import { showRollAnimation } from "./modules/helpers/dsn.mjs";
 import { applyDamage, resolveDamageTier } from "./modules/helpers/damage.mjs";
 import { handleSocketMessage, requestApplyDamage } from "./modules/helpers/socket.mjs";
 
@@ -85,7 +86,8 @@ Hooks.once("init", () => {
         const damagePips    = parseInt(btn.dataset.damagePips);
         const damageBase    = parseInt(btn.dataset.damageBase);
 
-        const damageTotal = await rollDamage(damageDice, damagePips);
+        const { total: damageTotal, roll: damageRoll } = await rollDamage(damageDice, damagePips);
+        await showRollAnimation(damageRoll);
         const tier = resolveDamageTier(damageTotal, damageBase);
 
         // Disable button immediately to prevent double-click
@@ -160,4 +162,48 @@ Hooks.once("init", () => {
 // Register socket handler in "ready" — game.socket is not available in "init"
 Hooks.once("ready", () => {
   game.socket.on("system.starwarsd6", handleSocketMessage);
+});
+
+Hooks.once("diceSoNiceReady", (dice3d) => {
+  // Normal d6 — white background, black numbers
+  dice3d.addColorset({
+    name: "swd6-normal",
+    description: "SW D6 Normal",
+    category: "Star Wars D6",
+    foreground: ["#000000"],
+    background: ["#ffffff"],
+    outline: "#cccccc",
+    edge: "#aaaaaa",
+    texture: "none",
+    material: "plastic",
+    visibility: "visible",
+  });
+
+  // PC wild die — pale green background, black numbers
+  dice3d.addColorset({
+    name: "swd6-pc-wild",
+    description: "SW D6 PC Wild",
+    category: "Star Wars D6",
+    foreground: ["#000000"],
+    background: ["#90ee90"],
+    outline: "#4caf50",
+    edge: "#4caf50",
+    texture: "none",
+    material: "plastic",
+    visibility: "visible",
+  });
+
+  // NPC wild die — red background, white numbers
+  dice3d.addColorset({
+    name: "swd6-npc-wild",
+    description: "SW D6 NPC Wild",
+    category: "Star Wars D6",
+    foreground: ["#ffffff"],
+    background: ["#cc0000"],
+    outline: "#880000",
+    edge: "#880000",
+    texture: "none",
+    material: "plastic",
+    visibility: "visible",
+  });
 });
