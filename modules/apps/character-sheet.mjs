@@ -27,7 +27,6 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
       deleteItem: CharacterSheet.#deleteItem,
       toggleEquipped: CharacterSheet.#toggleEquipped,
       toggleKeptUp: CharacterSheet.#toggleKeptUp,
-      newRound: CharacterSheet.#newRound,
       incrementStat: CharacterSheet.#incrementStat,
       decrementStat: CharacterSheet.#decrementStat,
       editImage: CharacterSheet.#editImage
@@ -42,6 +41,19 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
   // Instance property — declares default active tab per group
   tabGroups = { primary: "attributes" };
+
+  // Override _replaceHTML to preserve scroll positions across re-renders.
+  // scrollY / scrollable don't work with single-part CSS-tab sheets.
+  async _replaceHTML(result, content, options) {
+    const scrolls = {};
+    content.querySelectorAll("section.tab[data-tab]").forEach(el => {
+      scrolls[el.dataset.tab] = el.scrollTop;
+    });
+    await super._replaceHTML(result, content, options);
+    content.querySelectorAll("section.tab[data-tab]").forEach(el => {
+      if (scrolls[el.dataset.tab]) el.scrollTop = scrolls[el.dataset.tab];
+    });
+  }
 
   _onRender(context, options) {
     super._onRender(context, options);
@@ -182,16 +194,14 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     if (!skill) return;
 
     const fp = this.document.system.forcePoints;
-    const fpSpent = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
     const defaultDifficulty = Math.ceil(3.5 * skill.system.dicePool);
-    const result = await RollDialog.prompt({ canSpendFP: !fpSpent, hasFP: fp > 0, showDifficulty: true, defaultDifficulty });
+    const result = await RollDialog.prompt({ canSpendFP: fp > 0, hasFP: fp > 0, showDifficulty: true, defaultDifficulty });
     if (result === null) return; // cancelled
 
     const { numActions, useForcePoint, difficulty } = result;
 
     if (useForcePoint) {
       await this.document.update({ "system.forcePoints": Math.max(0, fp - 1) });
-        await this.document.setFlag("starwarsd6", "fpSpentThisRound", true);
     }
 
     const keepUpPenalty = this.document.system.keepUpPenalty ?? 0;
@@ -223,16 +233,14 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     if (!attr) return;
 
     const fp = this.document.system.forcePoints;
-    const fpSpent = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
     const defaultDifficulty = Math.ceil(3.5 * attr.dice);
-    const result = await RollDialog.prompt({ canSpendFP: !fpSpent, hasFP: fp > 0, showDifficulty: true, defaultDifficulty });
+    const result = await RollDialog.prompt({ canSpendFP: fp > 0, hasFP: fp > 0, showDifficulty: true, defaultDifficulty });
     if (result === null) return;
 
     const { numActions, useForcePoint, difficulty } = result;
 
     if (useForcePoint) {
       await this.document.update({ "system.forcePoints": Math.max(0, fp - 1) });
-        await this.document.setFlag("starwarsd6", "fpSpentThisRound", true);
     }
 
     const keepUpPenalty = this.document.system.keepUpPenalty ?? 0;
@@ -360,7 +368,6 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     const noTarget = !targetActor;
 
     const fp = this.document.system.forcePoints;
-    const fpSpent = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
 
     // Compute defense pre-fill before opening dialog
     const RANGED_SKILLS = ["blaster", "starship gunnery", "starfighter piloting"];
@@ -384,7 +391,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     }
 
     const dialogResult = await RollDialog.prompt({
-      canSpendFP: !fpSpent, hasFP: fp > 0,
+      canSpendFP: fp > 0, hasFP: fp > 0,
       showDifficulty: true, defaultDifficulty: rawDefenseValue
     });
     if (dialogResult === null) return;
@@ -393,7 +400,6 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     if (useForcePoint) {
       await this.document.update({ "system.forcePoints": Math.max(0, fp - 1) });
-        await this.document.setFlag("starwarsd6", "fpSpentThisRound", true);
     }
 
     const penaltyDice = this.document.system.penaltyDice;
@@ -564,14 +570,6 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
   }
 
   /**
-   * Clear the fpSpentThisRound flag. Called by the "New Round" button in the sheet header.
-   * @this {CharacterSheet}
-   */
-  static async #newRound(event, target) {
-    await this.document.setFlag("starwarsd6", "fpSpentThisRound", false);
-  }
-
-  /**
    * Roll a Force skill (control/sense/alter) with DSP bonus, wound penalty, and keep-up penalty.
    * @this {CharacterSheet}
    * @param {PointerEvent} event
@@ -589,15 +587,13 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     const totalPips = skill.pips + bonus.bonusPips; // may exceed 2, OK
 
     const fp = system.forcePoints;
-    const fpSpent = !!this.document.getFlag("starwarsd6", "fpSpentThisRound");
-    const result = await RollDialog.prompt({ canSpendFP: !fpSpent, hasFP: fp > 0, isForceRoll: true });
+    const result = await RollDialog.prompt({ canSpendFP: fp > 0, hasFP: fp > 0, isForceRoll: true });
     if (result === null) return;
 
     const { numActions, useForcePoint, forceDifficultyModifier } = result;
 
     if (useForcePoint) {
       await this.document.update({ "system.forcePoints": Math.max(0, fp - 1) });
-        await this.document.setFlag("starwarsd6", "fpSpentThisRound", true);
     }
 
     const keepUpPenalty = system.keepUpPenalty ?? 0;

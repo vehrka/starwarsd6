@@ -245,9 +245,9 @@ penaltyPips = -1 per stunMark (flat roll penalty, not dice)
 
 **Force Point:** Checkbox in `RollDialog`. If checked, `doubled = true` → `effectiveDice = dice × 2`. Decrements `forcePoints` via `actor.update()`.
 
-**Mutual exclusivity:** Track `fpSpentThisRound` via `actor.setFlag("starwarsd6", "fpSpentThisRound", true)`. Clear via a "New Round" button or `combatRound` hook.
+**Mutual exclusivity:** No longer enforced by code. GM manages at the table.
 
-**Testing:** CP=3, roll skill, click "Spend CP" → +1D added, CP→2. FP spend doubles dice. Both same round → second button disabled.
+**Testing:** CP=3, roll skill, click "Spend CP" → +1D added, CP→2. FP spend doubles dice regardless of how many times FP has been spent this round.
 
 ---
 

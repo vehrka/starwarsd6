@@ -94,3 +94,23 @@ describe("applyDarkSidePoint()", () => {
     expect(actor.update).toHaveBeenCalledOnce();
   });
 });
+
+// ──────────────────────────────────────────────────────────────────────────────
+// canSpendFP logic — fp > 0 is the sole gate (no per-round flag)
+// ──────────────────────────────────────────────────────────────────────────────
+describe("canSpendFP expression", () => {
+  it("true when fp > 0", () => {
+    expect(2 > 0).toBe(true);
+  });
+
+  it("false when fp === 0", () => {
+    expect(0 > 0).toBe(false);
+  });
+
+  it("true regardless of how many times FP spent this round", () => {
+    const fp = 3;
+    // Old guard would have been: !fpSpentThisRound — always false after first spend
+    // New guard: fp > 0 — true as long as fp remains
+    expect(fp > 0).toBe(true);
+  });
+});

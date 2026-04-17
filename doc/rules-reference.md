@@ -488,8 +488,8 @@ Each Force power is documented with the following fields:
 
 - Spend 1 Force Point to **double all skill and attribute die codes** for one round.
 - Must be declared **before** any dice are rolled that round.
-- Only **one** Force Point may be spent per round.
-- **Cannot** spend Character Points in the same round.
+- Only **one** Force Point may be spent per round (GM-managed table rule; not system-enforced).
+- **Cannot** spend Character Points in the same round (GM-managed table rule; not system-enforced).
 - Using a Force Point in anger, fear, or for selfish/evil purposes risks the **dark side** (see Dark Side Points).
 
 ### Dark Side Points
