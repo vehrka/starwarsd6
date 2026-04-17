@@ -68,8 +68,8 @@ export default class NpcSheet extends HandlebarsApplicationMixin(foundry.applica
         );
         const attrKey   = skillItem?.system.attribute ?? "DEX";
         const attr      = sys[attrKey] ?? sys.DEX;
-        const skillDice = attr.dice + (skillItem?.system.rank ?? 0);
-        const skillPips = attr.pips;
+        const skillDice = skillItem ? skillItem.system.dicePool : attr.dice;
+        const skillPips = skillItem ? skillItem.system.pips : attr.pips;
         const attackSkillDisplay = skillPips > 0 ? `${skillDice}D+${skillPips}` : `${skillDice}D`;
         return {
           id: i.id,
@@ -318,7 +318,7 @@ export default class NpcSheet extends HandlebarsApplicationMixin(foundry.applica
 
     const normalStr = result.normalDice.length > 0
       ? `Normal: [${result.normalDice.join(", ")}] | ` : "";
-    const pipsStr = result.pips > 0 ? ` +${result.pips} pips` : "";
+    const pipsStr = result.pips > 0 ? ` +${result.pips}` : "";
 
     const penaltyStr = NpcSheet.#buildPenaltyLines(numActions, 0, penaltyDice, penaltyPips);
 
@@ -378,7 +378,7 @@ export default class NpcSheet extends HandlebarsApplicationMixin(foundry.applica
 
     const normalStr = result.normalDice.length > 0
       ? `Normal: [${result.normalDice.join(", ")}] | ` : "";
-    const pipsStr = result.pips > 0 ? ` +${result.pips} pips` : "";
+    const pipsStr = result.pips > 0 ? ` +${result.pips}` : "";
 
     const penaltyStr = NpcSheet.#buildPenaltyLines(numActions, 0, penaltyDice, penaltyPips);
 

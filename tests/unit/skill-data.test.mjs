@@ -3,10 +3,11 @@ import SkillData from "../../modules/items/skill-data.mjs";
 
 // Build a minimal SkillData instance for testing prepareDerivedData().
 // Sets up `this.parent.actor.system` to simulate an embedded skill on a character.
-function makeSkillData({ attribute = "DEX", rank = 0, actorSystem = null } = {}) {
+function makeSkillData({ attribute = "DEX", rank = 0, rankPips = 0, actorSystem = null } = {}) {
   const instance = Object.create(SkillData.prototype);
   instance.attribute = attribute;
   instance.rank = rank;
+  instance.rankPips = rankPips;
   // Default actor system with all attributes at 2D+0
   const defaultSystem = {
     DEX: { dice: 2, pips: 0 },
@@ -74,5 +75,43 @@ describe("SkillData.prepareDerivedData()", () => {
     });
     skill.prepareDerivedData();
     expect(skill.dicePool).toBeUndefined();
+  });
+
+  it("rankPips adds to inherited pips without overflow", () => {
+    const skill = makeSkillData({
+      attribute: "DEX",
+      rank: 1,
+      rankPips: 1,
+      actorSystem: { DEX: { dice: 2, pips: 0 } }
+    });
+    skill.prepareDerivedData();
+    expect(skill.dicePool).toBe(3); // 2+1+0 extra dice
+    expect(skill.pips).toBe(1);    // 0+1 = 1
+  });
+
+  it("rankPips + parent pips overflow into extra die", () => {
+    const skill = makeSkillData({
+      attribute: "DEX",
+      rank: 1,
+      rankPips: 2,
+      actorSystem: { DEX: { dice: 2, pips: 2 } }
+    });
+    skill.prepareDerivedData();
+    // totalPips=4 → extraDice=1, pips=1; dicePool=2+1+1=4
+    expect(skill.dicePool).toBe(4);
+    expect(skill.pips).toBe(1);
+  });
+
+  it("rankPips=2 with parent pips=1 overflows to 1 extra die", () => {
+    const skill = makeSkillData({
+      attribute: "STR",
+      rank: 0,
+      rankPips: 2,
+      actorSystem: { STR: { dice: 3, pips: 1 } }
+    });
+    skill.prepareDerivedData();
+    // totalPips=3 → extraDice=1, pips=0; dicePool=3+0+1=4
+    expect(skill.dicePool).toBe(4);
+    expect(skill.pips).toBe(0);
   });
 });

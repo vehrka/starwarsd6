@@ -294,7 +294,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     const normalStr = result.normalDice.length > 0
       ? `Normal: [${result.normalDice.join(", ")}] | ` : "";
-    const pipsStr = result.pips > 0 ? ` +${result.pips} pips` : "";
+    const pipsStr = result.pips > 0 ? ` +${result.pips}` : "";
 
     const penaltyStr = CharacterSheet.#buildPenaltyLines(numActions, keepUpPenalty, penaltyDice, penaltyPips);
 
@@ -510,7 +510,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     const normalStr = result.normalDice.length > 0
       ? `Normal: [${result.normalDice.join(", ")}] | ` : "";
-    const pipsStr = result.pips > 0 ? ` +${result.pips} pips` : "";
+    const pipsStr = result.pips > 0 ? ` +${result.pips}` : "";
 
     const penaltyStr = CharacterSheet.#buildPenaltyLines(numActions, keepUpPenalty, penaltyDice, penaltyPips);
 
@@ -637,7 +637,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     const normalStr = result.normalDice.length > 0
       ? `Normal: [${result.normalDice.join(", ")}] | ` : "";
-    const pipsStr = result.pips > 0 ? ` +${result.pips} pips` : "";
+    const pipsStr = result.pips > 0 ? ` +${result.pips}` : "";
 
     const bonusStr = (bonus.bonusDice > 0 || bonus.bonusPips > 0)
       ? `<div class="force-bonus">${game.i18n.localize("STARWARSD6.Force.ChatDSPBonus")}: +${bonus.bonusDice}D+${bonus.bonusPips}</div>`

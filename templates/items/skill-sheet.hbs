@@ -18,5 +18,13 @@
       <label>{{localize "STARWARSD6.Skill.Rank"}}</label>
       <input type="number" name="system.rank" value="{{system.rank}}" min="0" />
     </div>
+    <div class="form-group">
+      <label>{{localize "STARWARSD6.Skill.RankPips"}}</label>
+      <select name="system.rankPips">
+        <option value="0" {{#if (eq system.rankPips 0)}}selected{{/if}}>+0</option>
+        <option value="1" {{#if (eq system.rankPips 1)}}selected{{/if}}>+1</option>
+        <option value="2" {{#if (eq system.rankPips 2)}}selected{{/if}}>+2</option>
+      </select>
+    </div>
   </section>
 </div>
