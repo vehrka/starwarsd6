@@ -496,6 +496,27 @@ Phase 9 (polish) — final cleanup, no hard dependencies
 
 ---
 
+## feat022 ✅ — PC Default Skills on Creation
+
+**Goal:** Auto-populate a fixed set of 36 default skill items when a PC actor is created. NPCs start empty.
+
+**Bug fixed:** `starwarsd6.mjs` used `CONFIG.Actor.documentClasses` (plural, invalid in v13) — silently ignored, `CharacterActor._onCreate` never fired. Corrected to `CONFIG.Actor.documentClass = CharacterActor` with `this.type !== "character"` guard inside `_onCreate` to skip NPCs.
+
+**Skill list** (from `doc/ref/bs_character_sheet.jpg`):
+
+| Attribute | Skills |
+|-----------|--------|
+| DEX | Blaster, Brawling Parry, Dodge, Grenade, Hvy Weapons, Melee |
+| KNO | Alien Races, Bureaucracy, Culture, Languages, Planets, Streetwise, Survival, Technology |
+| MEC | Astrogation, Beast Riding, Repulsorlift Operation, Ship Weapons, Ship Pilot, Ship Shields |
+| PER | Bargain, Command, Con, Gambling, Hide/Sneak, Search |
+| STR | Brawling, Climb/Jump, Lifting, Stamina, Swimming |
+| TEC | Computers, Demolitions, Droids, Medicine, Repair, Security |
+
+**Files modified:** `modules/actors/character.mjs` (skill list + `_onCreate`), `starwarsd6.mjs` (`documentClass` fix)
+
+---
+
 ## Out of Scope
 
 - Compendium packs (pre-built skill items, weapons)

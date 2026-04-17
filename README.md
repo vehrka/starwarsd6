@@ -6,7 +6,7 @@ A FoundryVTT v13 game system implementing the **Star Wars D6 RPG** (1st edition 
 
 A fully playable Star Wars D6 system for Foundry VTT v13, covering:
 
-- Full character creation: 6 attributes (DEX, KNO, MEC, PER, STR, TEC), 38 skills + 3 Force skills
+- Full character creation: 6 attributes (DEX, KNO, MEC, PER, STR, TEC), 36 default skills + 3 Force skills; skills auto-populated on PC creation
 - Wild-die roll engine with complication and explosion annotations in chat
 - Weapons, armor, and equipment item types with inventory management
 - Combat resolution: derived defense values, damage tiers, hit-box tracking, wound penalties

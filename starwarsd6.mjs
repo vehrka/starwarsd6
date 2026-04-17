@@ -1,7 +1,6 @@
 import CharacterData from "./modules/actors/character-data.mjs";
 import CharacterActor from "./modules/actors/character.mjs";
 import NpcData from "./modules/actors/npc-data.mjs";
-import NpcActor from "./modules/actors/npc.mjs";
 import SkillData from "./modules/items/skill-data.mjs";
 import SkillItem from "./modules/items/skill.mjs";
 import WeaponData from "./modules/items/weapon-data.mjs";
@@ -32,7 +31,7 @@ function resolveTargetActor(tokenId, actorId) {
 }
 
 Hooks.once("init", () => {
-  CONFIG.Actor.documentClasses = { character: CharacterActor, npc: NpcActor };
+  CONFIG.Actor.documentClass = CharacterActor;
   CONFIG.Actor.dataModels = { character: CharacterData, npc: NpcData };
   CONFIG.Item.documentClass = SkillItem;
   CONFIG.Item.dataModels = {
