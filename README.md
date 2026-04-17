@@ -2,6 +2,16 @@
 
 A FoundryVTT v13 game system implementing the **Star Wars D6 RPG** (1st edition + Bill Slavicsek house rules).
 
+- Full character creation: 6 attributes (DEX, KNO, MEC, PER, STR, TEC), 36 default skills + 3 Force skills; skills auto-populated on PC creation
+- Wild-die roll engine with complication and explosion annotations in chat
+- Weapons, armor, and equipment item types with inventory management
+- Combat resolution: derived defense values, damage tiers, hit-box tracking, wound penalties
+- Non-combat skill/attribute rolls show a pre-filled difficulty and Success/Failure result in chat
+- Character Points and Force Points spend mechanics
+- NPC actor type with simplified sheet
+- Force System: control/sense/alter skills, DSP bonus, keep-up powers, dark side conversion
+- Polished tabbed sheets, full localization, styled chat cards
+
 ---
 
 ## For Players & GMs
@@ -66,49 +76,6 @@ Force-sensitive characters can own **Force Power** items. Each power lists its a
 
 ---
 
-## Development Status
-
-| Phase | Feature | Status |
-|-------|---------|--------|
-| 0 | Base scaffold & sheet rendering | ✅ Done |
-| 1 | Skills & data expansion (38 skills) | ✅ Done |
-| 2 | Dice engine — Wild Die rolls | ✅ Done |
-| 3 | Item types: weapon, armor, equipment | ✅ Done |
-| 4 | Combat: defense values, damage tiers, hit boxes | ✅ Done |
-| 5 | Character Points & Force Points | ✅ Done |
-| 6 | NPC actor type | ✅ Done |
-| 7 | Force system: control/sense/alter, DSP, keep-up | ✅ Done |
-| 7.5 | Force Powers item type | ✅ Done |
-| 8 | Targeted combat resolution (auto-read target defense) | ✅ Done |
-| 9 | Sheet polish — Force tab restyle | ✅ Done |
-| — | Non-combat roll difficulty field | ✅ Done |
-| — | PC combat tab restyling | ✅ Done |
-| — | Circle counters (CP/FP/DSP) | ✅ Done |
-| — | NPC attributes, skills & attack rolls | ✅ Done |
-| — | Bio tab (portrait + identity fields) | ✅ Done |
-| — | NPC sheet restyling | ✅ Done |
-| — | Auto-populate default skills on PC creation | ✅ Done |
-
-**Out of scope:** compendium packs, vehicle actors, Active Effects, token automation.
-
----
-
-## Final Goal
-
-A fully playable Star Wars D6 system for Foundry VTT v13, covering:
-
-- Full character creation: 6 attributes (DEX, KNO, MEC, PER, STR, TEC), 36 default skills + 3 Force skills; skills auto-populated on PC creation
-- Wild-die roll engine with complication and explosion annotations in chat
-- Weapons, armor, and equipment item types with inventory management
-- Combat resolution: derived defense values, damage tiers, hit-box tracking, wound penalties
-- Non-combat skill/attribute rolls show a pre-filled difficulty and Success/Failure result in chat
-- Character Points and Force Points spend mechanics
-- NPC actor type with simplified sheet
-- Force System: control/sense/alter skills, DSP bonus, keep-up powers, dark side conversion
-- Polished tabbed sheets, full localization, styled chat cards
-
----
-
 ## Tech Stack
 
 - **Platform:** FoundryVTT v13 (minimum v13, no legacy support)
@@ -131,11 +98,4 @@ starwarsd6/
 ├── styles/                  # CSS
 └── lang/
     └── en.json              # Localization strings
-```
-
-## Deploy
-
-```bash
-./deploy.sh           # rsync to remote Foundry server
-./deploy.sh --dry-run # preview changes
 ```
