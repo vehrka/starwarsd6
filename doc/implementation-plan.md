@@ -517,6 +517,14 @@ Phase 9 (polish) — final cleanup, no hard dependencies
 
 ---
 
+## feat022b ✅ — PC Character Sheet Minor Fixes
+
+**Goal:** Five targeted layout/data changes: `system.notes` field, Move → Combat tab, Force Sensitive → Bio tab, Combat weapons restyled to inv-list, Force tab footer order swapped.
+
+**Files modified:** `modules/actors/character-data.mjs` (`notes` StringField), `templates/actors/character-sheet.hbs` (all template changes), `lang/en.json` (`STARWARSD6.Bio.Notes`)
+
+---
+
 ## Out of Scope
 
 - Compendium packs (pre-built skill items, weapons)

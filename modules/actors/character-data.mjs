@@ -46,6 +46,7 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
       sex:           new StringField({ required: false, initial: "" }),
       age:           new StringField({ required: false, initial: "" }),
       description:   new StringField({ required: false, initial: "" }),
+      notes:         new StringField({ required: false, initial: "" }),
       stunMarks:   new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
       woundMarks:  new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
       incapMarks:  new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),

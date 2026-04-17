@@ -54,6 +54,11 @@
           <input type="text" name="system.characterType"
                  value="{{system.characterType}}"
                  class="bio-input" />
+          <span class="bio-inline-group">
+            <label class="bio-label">{{localize "STARWARSD6.Character.ForceSensitive"}}</label>
+            <input type="checkbox" name="system.forceSensitive"
+                   {{#if system.forceSensitive}}checked{{/if}} />
+          </span>
         </div>
 
         <div class="bio-row bio-row--inline">
@@ -87,6 +92,12 @@
           <label class="bio-label">{{localize "STARWARSD6.Bio.Description"}}</label>
           <textarea name="system.description"
                     class="bio-textarea">{{system.description}}</textarea>
+        </div>
+
+        <div class="bio-row bio-row--description">
+          <label class="bio-label">{{localize "STARWARSD6.Bio.Notes"}}</label>
+          <textarea name="system.notes"
+                    class="bio-textarea">{{system.notes}}</textarea>
         </div>
 
       </div>{{!-- .bio-fields --}}
@@ -142,14 +153,6 @@
 
     {{!-- Footer stats --}}
     <div class="attr-footer">
-      <div class="attr-footer-group">
-        <label>{{localize "STARWARSD6.Attribute.Move"}}</label>
-        <input type="number" name="system.move" value="{{system.move}}" min="0" class="stat-input" />
-      </div>
-      <div class="attr-footer-group">
-        <label>{{localize "STARWARSD6.Character.ForceSensitive"}}</label>
-        <input type="checkbox" name="system.forceSensitive" {{#if system.forceSensitive}}checked{{/if}} />
-      </div>
       <div class="attr-footer-group counter-group">
         <div class="counter-row">
           <button type="button" class="counter-btn" data-action="decrementStat" data-field="characterPoints" title="−">
@@ -296,34 +299,34 @@
            data-tab="combat" data-group="primary">
 
     {{!-- Section 1: Weapons --}}
+    <div class="attr-footer-group">
+      <label>{{localize "STARWARSD6.Attribute.Move"}}</label>
+      <input type="number" name="system.move" value="{{system.move}}" min="0" class="stat-input" />
+    </div>
     <h3>{{localize "STARWARSD6.Combat.Weapons"}}</h3>
+    <div class="inv-section-header">
+      <span class="inv-section-name">{{localize "STARWARSD6.Skill.Name"}}</span>
+      <span class="inv-col-label inv-col-damage">{{localize "STARWARSD6.Item.Weapon.Damage"}}</span>
+      <span class="inv-col-label inv-col-skill">{{localize "STARWARSD6.Item.Weapon.AttackSkill"}}</span>
+      <span class="inv-col-delete"></span>
+    </div>
     {{#if combatData.weapons.length}}
-    <table class="combat-weapons-table">
-      <thead>
-        <tr>
-          <th>{{localize "STARWARSD6.Skill.Name"}}</th>
-          <th>{{localize "STARWARSD6.Item.Weapon.Damage"}}</th>
-          <th>{{localize "STARWARSD6.Item.Weapon.AttackSkill"}}</th>
-          <th>{{localize "STARWARSD6.Combat.AttackRoll"}}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{#each combatData.weapons as |weapon|}}
-        {{#if weapon.equipped}}
-        <tr>
-          <td>{{weapon.name}}</td>
-          <td>{{weapon.damageDice}}D{{#if weapon.damagePips}}+{{weapon.damagePips}}{{/if}}</td>
-          <td>{{weapon.attackSkillDisplay}}</td>
-          <td>
-            <button type="button" data-action="rollAttack" data-weapon-id="{{weapon.id}}">
-              {{localize "STARWARSD6.Combat.Roll"}}
-            </button>
-          </td>
-        </tr>
-        {{/if}}
-        {{/each}}
-      </tbody>
-    </table>
+    <ul class="inv-list">
+      {{#each combatData.weapons as |weapon|}}
+      {{#if weapon.equipped}}
+      <li class="inv-row item-row" data-item-id="{{weapon.id}}">
+        <span class="inv-name">{{weapon.name}}</span>
+        <span class="inv-col-damage">{{weapon.damageDice}}D{{#if weapon.damagePips}}+{{weapon.damagePips}}{{/if}}</span>
+        <span class="inv-col-skill">{{weapon.attackSkillDisplay}}</span>
+        <span class="inv-col-delete">
+          <button type="button" data-action="rollAttack" data-weapon-id="{{weapon.id}}">
+            {{localize "STARWARSD6.Combat.Roll"}}
+          </button>
+        </span>
+      </li>
+      {{/if}}
+      {{/each}}
+    </ul>
     {{else}}
     <p class="no-items">{{localize "STARWARSD6.Inventory.Empty"}}</p>
     {{/if}}
@@ -498,8 +501,14 @@
       {{/each}}
     </ul>
 
-    {{!-- 4. DSP / Force Points footer — attr-footer pattern --}}
+    {{!-- 4. Force Points / DSP footer — attr-footer pattern --}}
     <div class="attr-footer">
+      <div class="attr-footer-group counter-group counter-group--readonly">
+        <div class="counter-row">
+          <div class="counter-circle">{{system.forcePoints}}</div>
+        </div>
+        <label>{{localize "STARWARSD6.Character.ForcePoints"}}</label>
+      </div>
       <div class="attr-footer-group counter-group">
         <div class="counter-row">
           <div class="counter-circle">{{forceData.dsp}}</div>
@@ -519,12 +528,6 @@
         </span>
       </div>
       {{/if}}
-      <div class="attr-footer-group counter-group counter-group--readonly">
-        <div class="counter-row">
-          <div class="counter-circle">{{system.forcePoints}}</div>
-        </div>
-        <label>{{localize "STARWARSD6.Character.ForcePoints"}}</label>
-      </div>
     </div>
 
   </section>

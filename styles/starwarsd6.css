@@ -368,6 +368,8 @@
 .starwarsd6.sheet .inv-col-delete,
 .starwarsd6.sheet .inv-col-label.inv-col-delete { width: 1.5em; flex-shrink: 0; text-align: center; }
 
+.starwarsd6.sheet .tab[data-tab="combat"] .inv-col-delete { width: 6em; }
+
 .starwarsd6.sheet .inv-col-label.inv-col-qty    { width: 4em; flex-shrink: 0; text-align: center; font-size: 0.9em; font-weight: bold; color: #555; }
 
 .starwarsd6.sheet .no-items {

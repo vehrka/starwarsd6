@@ -178,5 +178,6 @@
   "STARWARSD6.Bio.Weight": "Weight",
   "STARWARSD6.Bio.Sex": "Sex",
   "STARWARSD6.Bio.Age": "Age",
-  "STARWARSD6.Bio.Description": "Physical Description"
+  "STARWARSD6.Bio.Description": "Physical Description",
+  "STARWARSD6.Bio.Notes": "Notes"
 }
