@@ -2,7 +2,7 @@
   "id": "starwarsd6",
   "title": "Star Wars D6",
   "description": "A FoundryVTT system for the Star Wars D6 RPG (1st edition + house rules).",
-  "version": "0.1.0",
+  "version": "#{VERSION}#",
   "compatibility": {
     "minimum": "13",
     "verified": "13"
@@ -33,5 +33,8 @@
       "name": "English",
       "path": "lang/en.json"
     }
-  ]
+  ],
+  "url": "#{URL}#",
+  "manifest": "#{MANIFEST}#",
+  "download": "#{DOWNLOAD}#"
 }

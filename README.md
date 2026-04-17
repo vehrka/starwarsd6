@@ -2,15 +2,24 @@
 
 A FoundryVTT v13 game system implementing the **Star Wars D6 RPG** (1st edition + Bill Slavicsek house rules).
 
-- Full character creation: 6 attributes (DEX, KNO, MEC, PER, STR, TEC), 36 default skills + 3 Force skills; skills auto-populated on PC creation
-- Wild-die roll engine with complication and explosion annotations in chat
-- Weapons, armor, and equipment item types with inventory management
-- Combat resolution: derived defense values, damage tiers, hit-box tracking, wound penalties
-- Non-combat skill/attribute rolls show a pre-filled difficulty and Success/Failure result in chat
-- Character Points and Force Points spend mechanics
-- NPC actor type with simplified sheet
-- Force System: control/sense/alter skills, DSP bonus, keep-up powers, dark side conversion
-- Polished tabbed sheets, full localization, styled chat cards
+---
+
+## Installation
+
+### From Foundry VTT (recommended)
+
+1. Open Foundry VTT and go to **Game Systems** → **Install System**.
+2. In the **Manifest URL** field paste:
+   ```
+   https://github.com/vehrka/starwarsd6/releases/latest/download/system.json
+   ```
+3. Click **Install**. Foundry will download and install the latest release automatically.
+
+### Manual install
+
+1. Download `starwarsd6.zip` from the [latest release](https://github.com/vehrka/starwarsd6/releases/latest).
+2. Extract the archive into your Foundry `Data/systems/` folder so the result is `Data/systems/starwarsd6/`.
+3. Restart Foundry VTT.
 
 ---
 
@@ -99,3 +108,14 @@ starwarsd6/
 └── lang/
     └── en.json              # Localization strings
 ```
+
+## Releasing a New Version
+
+1. Push all changes to `master`.
+2. Create and publish a GitHub release with a semver tag (e.g. `1.0.0` or `v1.0.0`).
+3. The CI workflow (`.github/workflows/release.yml`) runs automatically:
+   - Injects the version, manifest URL, and download URL into `system.json`.
+   - Creates `starwarsd6.zip` with all required system files.
+   - Attaches both `system.json` and `starwarsd6.zip` to the GitHub release.
+
+Foundry installations pointed at the manifest URL will detect the new version immediately.

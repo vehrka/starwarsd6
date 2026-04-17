@@ -1,0 +1,58 @@
+name: Create Release Package
+
+env:
+  project_url: "https://github.com/${{github.repository}}"
+  latest_manifest_url: "https://github.com/${{github.repository}}/releases/latest/download/system.json"
+  release_download_url: "https://github.com/${{github.repository}}/releases/download/${{github.event.release.tag_name}}/starwarsd6.zip"
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Extract Version From Tag
+        id: get_version
+        uses: battila7/get-version-action@v2
+
+      - name: Modify Manifest With Release-Specific Values
+        uses: cschleiden/replace-tokens@v1
+        with:
+          files: 'system.json'
+        env:
+          VERSION: ${{steps.get_version.outputs.version-without-v}}
+          URL: ${{env.project_url}}
+          MANIFEST: ${{env.latest_manifest_url}}
+          DOWNLOAD: ${{env.release_download_url}}
+
+      - name: Create System Archive
+        run: |
+          zip \
+            --recurse-paths \
+            ./starwarsd6.zip \
+            system.json \
+            starwarsd6.mjs \
+            lang/ \
+            modules/ \
+            styles/ \
+            templates/
+
+      - name: Update Release With Files
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          name: ${{github.event.release.name}}
+          draft: ${{github.event.release.unpublished}}
+          prerelease: ${{github.event.release.prerelease}}
+          token: ${{secrets.GITHUB_TOKEN}}
+          artifacts: './system.json, ./starwarsd6.zip'
+          tag: ${{github.event.release.tag_name}}
+          body: ${{github.event.release.body}}
