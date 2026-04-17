@@ -551,6 +551,13 @@
   padding: 0 8px 8px;
 }
 
+.starwarsd6.sheet.npc textarea {
+  width: 100%;
+  min-height: 60px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
 .starwarsd6.sheet.npc .npc-section {
   margin-bottom: 0.75em;
 }
@@ -563,36 +570,33 @@
   border-bottom: 1px solid #ccc;
 }
 
-.starwarsd6.sheet.npc .npc-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5em 1em;
-  align-items: center;
-}
-
-.starwarsd6.sheet.npc .npc-row .form-group {
+/* NPC header: portrait left, name input right */
+.starwarsd6.sheet.npc .npc-header-layout {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  padding: 6px 8px;
 }
 
-.starwarsd6.sheet.npc .npc-row .form-group label {
-  font-size: 0.85em;
-  color: #444;
-  white-space: nowrap;
+.starwarsd6.sheet.npc .npc-header-layout input[type="text"] {
+  flex: 1;
+  font-size: 1.1em;
 }
 
-.starwarsd6.sheet.npc .npc-row input[type="number"] {
-  width: 3.5em;
-  text-align: center;
+/* NPC portrait */
+.starwarsd6.sheet.npc .bio-portrait {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border: 1px solid #999;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
-.starwarsd6.sheet.npc textarea {
-  width: 100%;
-  min-height: 60px;
-  resize: vertical;
-  box-sizing: border-box;
+.starwarsd6.sheet.npc .bio-portrait:hover {
+  border-color: #333;
 }
+
 
 /* Item sheet body */
 .starwarsd6.sheet.item .sheet-body {

@@ -1,187 +1,161 @@
 <div class="starwarsd6 sheet actor npc">
   <header class="sheet-header">
-    <input type="text" name="name" value="{{document.name}}" placeholder="NPC Name" />
+    <div class="npc-header-layout">
+      <img src="{{document.img}}"
+           data-action="editImage"
+           data-edit="img"
+           class="bio-portrait"
+           title="Click to change portrait" />
+      <input type="text" name="name" value="{{document.name}}" placeholder="NPC Name" />
+    </div>
   </header>
 
   <div class="sheet-body">
 
-    {{!-- Attributes & Skills Section (combined) --}}
-    <section class="npc-section">
-      <h3>{{localize "STARWARSD6.NPC.Attributes"}}</h3>
+    {{!-- SECTION 1: Attributes & Skills --}}
+    <div class="attr-skills-grid">
       {{#each attributeGroups as |group|}}
-        <div class="attribute-row">
-          <span class="attr-label">{{localize group.label}}</span>
-          <input type="number" name="system.{{group.key}}.dice" value="{{group.dice}}" min="1" />
-          <span>D</span>
-          <input type="number" name="system.{{group.key}}.pips" value="{{group.pips}}" min="0" max="2" />
-          <span class="base-value">({{group.baseValue}})</span>
-          <button type="button" data-action="rollAttribute" data-attribute-key="{{group.key}}"><i class="fas fa-dice"></i></button>
+      <div class="attr-column-block">
+
+        <div class="attr-header">
+          <button type="button" class="attr-roll-btn" data-action="rollAttribute"
+                  data-attribute-key="{{group.key}}"
+                  title="{{localize 'STARWARSD6.Roll.Label'}}">
+            <i class="fas fa-dice-d6"></i>
+          </button>
+          <span class="attr-name">{{localize group.label}}</span>
+          <span class="attr-dice">
+            <input type="number" name="system.{{group.key}}.dice" value="{{group.dice}}"
+                   min="1" class="attr-dice-input" />D+<input type="number" name="system.{{group.key}}.pips" value="{{group.pips}}"
+                   min="0" max="2" class="attr-pips-input" />
+          </span>
         </div>
+
         {{#if group.skills.length}}
-          <table class="skills-table">
-            <tbody>
-              {{#each group.skills as |skill|}}
-              <tr class="item-row skill-row" data-item-id="{{skill.id}}">
-                <td class="skill-indent">{{skill.name}}</td>
-                <td>{{skill.dicePool}}D{{#if skill.pips}}+{{skill.pips}}{{/if}}</td>
-                <td><button type="button" data-action="rollSkill" data-skill-id="{{skill.id}}"><i class="fas fa-dice"></i></button></td>
-                <td><button type="button" class="item-delete" data-action="deleteItem" data-item-id="{{skill.id}}" title="Delete">✕</button></td>
-              </tr>
-              {{/each}}
-            </tbody>
-          </table>
+        <ul class="skill-list">
+          {{#each group.skills as |skill|}}
+          <li class="skill-row" data-item-id="{{skill.id}}">
+            <span class="skill-name">{{skill.name}}</span>
+            <span class="skill-pool">{{skill.dicePool}}D{{#if skill.pips}}+{{skill.pips}}{{/if}}</span>
+            <button type="button" class="skill-roll-btn" data-action="rollSkill"
+                    data-skill-id="{{skill.id}}" title="{{localize 'STARWARSD6.Roll.Label'}}">
+              <i class="fas fa-dice-d6"></i>
+            </button>
+            <button type="button" class="item-delete" data-action="deleteItem"
+                    data-item-id="{{skill.id}}" title="Delete">✕</button>
+          </li>
+          {{/each}}
+        </ul>
         {{/if}}
+
+      </div>
       {{/each}}
-      <div class="npc-row" style="margin-top: 0.5em;">
-        <div class="form-group">
-          <label>{{localize "STARWARSD6.Character.HitBoxes"}}</label>
-          <span class="derived-value">{{system.hitBoxes}}</span>
-        </div>
+    </div>
+
+    {{!-- SECTION 2: Weapons --}}
+    <h3>{{localize "STARWARSD6.Combat.Weapons"}}</h3>
+    {{#if weapons.length}}
+    <table class="combat-weapons-table">
+      <thead>
+        <tr>
+          <th>{{localize "STARWARSD6.Skill.Name"}}</th>
+          <th>{{localize "STARWARSD6.Item.Weapon.Damage"}}</th>
+          <th>{{localize "STARWARSD6.Item.Weapon.AttackSkill"}}</th>
+          <th>{{localize "STARWARSD6.Combat.AttackRoll"}}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each weapons as |weapon|}}
+        <tr>
+          <td>{{weapon.name}}</td>
+          <td>{{weapon.damageDice}}D{{#if weapon.damagePips}}+{{weapon.damagePips}}{{/if}}</td>
+          <td>{{weapon.attackSkill}} ({{weapon.attackSkillDisplay}})</td>
+          <td>
+            <button type="button" data-action="rollAttack" data-weapon-id="{{weapon.id}}"
+                    data-skill-dice="{{weapon.skillDice}}" data-skill-pips="{{weapon.skillPips}}">
+              {{localize "STARWARSD6.Combat.Roll"}}
+            </button>
+          </td>
+          <td>
+            <button type="button" class="item-delete" data-action="deleteItem"
+                    data-item-id="{{weapon.id}}" title="Delete">✕</button>
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+    {{else}}
+    <p class="no-items">{{localize "STARWARSD6.Inventory.Empty"}}</p>
+    {{/if}}
+
+    {{!-- SECTION 3: Wounds --}}
+    <div class="combat-wounds-section">
+      <h3>{{localize "STARWARSD6.Combat.Wounds"}}</h3>
+
+      <div class="combat-defense-inline">
+        <span class="defense-label">{{localize "STARWARSD6.Combat.Defense"}}</span>
+        <span class="defense-value">{{combatData.defense}}</span>
       </div>
-    </section>
 
-    {{!-- Weapons Section --}}
-    <section class="npc-section">
-      <h3>{{localize "STARWARSD6.NPC.Weapons"}}</h3>
-      {{#if weapons.length}}
-        <table class="inventory-table">
-          <thead>
-            <tr>
-              <th>{{localize "STARWARSD6.Skill.Name"}}</th>
-              <th>{{localize "STARWARSD6.NPC.AttackSkill"}}</th>
-              <th>{{localize "STARWARSD6.Item.Weapon.Damage"}}</th>
-              <th>{{localize "STARWARSD6.Combat.Roll"}}</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {{#each weapons as |weapon|}}
-            <tr class="item-row" data-item-id="{{weapon.id}}">
-              <td>{{weapon.name}}</td>
-              <td>{{weapon.attackSkill}}</td>
-              <td>{{weapon.damageDice}}D{{#if weapon.damagePips}}+{{weapon.damagePips}}{{/if}}</td>
-              <td><button type="button" data-action="rollAttack" data-weapon-id="{{weapon.id}}"><i class="fas fa-dice"></i></button></td>
-              <td><button type="button" class="item-delete" data-action="deleteItem" data-item-id="{{weapon.id}}" title="Delete">✕</button></td>
-            </tr>
-            {{/each}}
-          </tbody>
-        </table>
-      {{else}}
-        <p class="no-items">{{localize "STARWARSD6.Inventory.Empty"}}</p>
-      {{/if}}
-    </section>
+      <div class="wound-grid">
 
-    {{!-- Defense Section --}}
-    <section class="npc-section">
-      <h3>{{localize "STARWARSD6.Combat.Defense"}}</h3>
-      <div class="npc-row">
-        <div class="form-group">
-          <label>{{localize "STARWARSD6.Combat.RangedDefense"}}</label>
-          <input type="number" name="system.rangedDefense" value="{{system.rangedDefense}}" min="0" />
-        </div>
-        <div class="form-group">
-          <label>{{localize "STARWARSD6.Combat.MeleeDefense"}}</label>
-          <input type="number" name="system.meleeDefense" value="{{system.meleeDefense}}" min="0" />
-        </div>
-        <div class="form-group">
-          <label>{{localize "STARWARSD6.Combat.BrawlingDefense"}}</label>
-          <input type="number" name="system.brawlingDefense" value="{{system.brawlingDefense}}" min="0" />
-        </div>
-      </div>
-    </section>
-
-    {{!-- Damage Section --}}
-    <section class="npc-section">
-      <h3>{{localize "STARWARSD6.NPC.Damage"}}</h3>
-      <div class="npc-row">
-        <div class="form-group">
-          <label>{{localize "STARWARSD6.Attribute.Dice"}}</label>
-          <input type="number" name="system.damageDice" value="{{system.damageDice}}" min="1" />
-        </div>
-        <div class="form-group">
-          <label>{{localize "STARWARSD6.Attribute.Pips"}}</label>
-          <input type="number" name="system.damagePips" value="{{system.damagePips}}" min="0" max="2" />
-        </div>
-      </div>
-    </section>
-
-    {{!-- Damage Thresholds --}}
-    <section class="npc-section">
-      <h3>{{localize "STARWARSD6.Combat.DamageThresholds"}}</h3>
-      <table class="combat-defense-table">
-        <thead>
-          <tr>
-            <th>{{localize "STARWARSD6.Combat.Stun"}}</th>
-            <th>{{localize "STARWARSD6.Combat.Wound"}}</th>
-            <th>{{localize "STARWARSD6.Combat.Incap"}}</th>
-            <th>{{localize "STARWARSD6.Combat.Mortal"}}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="defense-value">{{combatData.thresholdStun}}</td>
-            <td class="defense-value">{{combatData.thresholdWound}}</td>
-            <td class="defense-value">{{combatData.thresholdIncap}}</td>
-            <td class="defense-value">{{combatData.thresholdMortal}}</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
-    {{!-- Hit Boxes --}}
-    <section class="npc-section">
-      <h3>{{localize "STARWARSD6.Combat.HitBoxes"}}</h3>
-      <div class="hit-box-tracker">
-
-        <div class="hit-box-row">
-          <span class="tier-label">{{localize "STARWARSD6.Combat.Stun"}}</span>
+        <div class="wound-cell">
+          <div class="wound-cell-header">
+            {{localize "STARWARSD6.Combat.Stun"}} ({{combatData.thresholdStun}})
+          </div>
           <div class="hit-boxes">
             {{#each combatData.stunBoxes as |box|}}
             <button type="button" class="hit-box {{#if box.marked}}marked{{/if}}"
-                    data-action="markHitBox" data-tier="stun"
-                    title="{{localize "STARWARSD6.Combat.Stun"}}"></button>
+                    data-action="markHitBox" data-tier="stun"></button>
             {{/each}}
           </div>
+          <div class="wound-consequence">{{combatData.hitBoxes}} = Unconscious</div>
         </div>
 
-        <div class="hit-box-row">
-          <span class="tier-label">{{localize "STARWARSD6.Combat.Wound"}}</span>
+        <div class="wound-cell">
+          <div class="wound-cell-header">
+            {{localize "STARWARSD6.Combat.Wound"}} ({{combatData.thresholdWound}})
+          </div>
           <div class="hit-boxes">
             {{#each combatData.woundBoxes as |box|}}
             <button type="button" class="hit-box {{#if box.marked}}marked{{/if}}"
-                    data-action="markHitBox" data-tier="wound"
-                    title="{{localize "STARWARSD6.Combat.Wound"}}"></button>
+                    data-action="markHitBox" data-tier="wound"></button>
             {{/each}}
           </div>
+          <div class="wound-consequence">{{combatData.hitBoxes}} = Incapacitated</div>
         </div>
 
-        <div class="hit-box-row">
-          <span class="tier-label">{{localize "STARWARSD6.Combat.Incap"}}</span>
+        <div class="wound-cell">
+          <div class="wound-cell-header">
+            {{localize "STARWARSD6.Combat.Incap"}} ({{combatData.thresholdIncap}})
+          </div>
           <div class="hit-boxes">
             {{#each combatData.incapBoxes as |box|}}
             <button type="button" class="hit-box {{#if box.marked}}marked{{/if}}"
-                    data-action="markHitBox" data-tier="incap"
-                    title="{{localize "STARWARSD6.Combat.Incap"}}"></button>
+                    data-action="markHitBox" data-tier="incap"></button>
             {{/each}}
           </div>
+          <div class="wound-consequence">{{combatData.hitBoxes}} = Mortally Wounded</div>
         </div>
 
-        <div class="hit-box-row">
-          <span class="tier-label">{{localize "STARWARSD6.Combat.Mortal"}}</span>
+        <div class="wound-cell">
+          <div class="wound-cell-header">
+            {{localize "STARWARSD6.Combat.Mortal"}} ({{combatData.thresholdMortal}})
+          </div>
           <div class="hit-boxes">
             {{#each combatData.mortalBoxes as |box|}}
             <button type="button" class="hit-box {{#if box.marked}}marked{{/if}}"
-                    data-action="markHitBox" data-tier="mortal"
-                    title="{{localize "STARWARSD6.Combat.Mortal"}}"></button>
+                    data-action="markHitBox" data-tier="mortal"></button>
             {{/each}}
           </div>
+          <div class="wound-consequence">{{combatData.hitBoxes}} = Dead</div>
         </div>
 
-      </div>
-      <p class="hit-box-hint">{{localize "STARWARSD6.Combat.HitBoxHint"}}</p>
-    </section>
+      </div>{{!-- .wound-grid --}}
+    </div>{{!-- .combat-wounds-section --}}
 
-    {{!-- Notes --}}
+    {{!-- SECTION 4: Notes --}}
     <section class="npc-section">
       <h3>{{localize "STARWARSD6.NPC.Notes"}}</h3>
       <div class="form-group">

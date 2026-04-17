@@ -31,6 +31,17 @@ export function calculateMeleeDefense(actor) {
 }
 
 /**
+ * NPC Defense = floor(3.5 * dodge_dicePool) + dodge_pips
+ * Falls back to 10 if no Dodge skill item found. No armor bonus.
+ * @param {Actor} actor
+ * @returns {number}
+ */
+export function calculateNpcDefense(actor) {
+  const dodge = actor.items.find(i => i.type === "skill" && i.name.toLowerCase() === "dodge");
+  return dodge ? Math.floor(3.5 * dodge.system.dicePool) + dodge.system.pips : 10;
+}
+
+/**
  * Brawling Defense = floor(3.5 * brawling_parry_dice) + brawling_parry_pips
  * Falls back to DEX if no Brawling Parry skill item found. No equipment bonus.
  * @param {Actor} actor

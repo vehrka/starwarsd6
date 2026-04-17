@@ -488,6 +488,14 @@ Phase 9 (polish) — final cleanup, no hard dependencies
 
 ---
 
+## feat021 ✅ — NPC Sheet Restyling
+
+**Goal:** Restyle `templates/actors/npc-sheet.hbs` and its CSS to match the PC character sheet's visual language. Single scrollable page, no tabs.
+
+**Completed:** `npc-sheet.hbs` rewritten top-to-bottom — header with portrait (`editImage`) + name input; 6 attributes in `attr-skills-grid` / `attr-column-block` / `skill-list` pattern; weapons in `combat-weapons-table` (no equipped filter); wounds block with single editable `system.rangedDefense` input + `wound-grid` 2×2; notes textarea at bottom. `npc-sheet.mjs` extended with `editImage` action and `combatData.defense` field. CSS: removed orphaned `.npc-row` rules; added `.npc-header-layout`, `.bio-portrait`, and `.npc-defense-input` rules scoped under `.starwarsd6.sheet.npc`. No data model changes.
+
+---
+
 ## Out of Scope
 
 - Compendium packs (pre-built skill items, weapons)

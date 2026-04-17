@@ -122,7 +122,7 @@
         {{#if group.skills.length}}
         <ul class="skill-list">
           {{#each group.skills as |skill|}}
-          <li class="skill-row">
+          <li class="skill-row" data-item-id="{{skill.id}}">
             <span class="skill-name">{{skill.name}}</span>
             <span class="skill-pool">{{skill.dicePool}}D{{#if skill.pips}}+{{skill.pips}}{{/if}}</span>
             <button type="button" class="skill-roll-btn" data-action="rollSkill"

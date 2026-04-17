@@ -1,5 +1,6 @@
 import { rollWithWildDie } from "../helpers/dice.mjs";
 import { applyDamage, removeOneMark } from "../helpers/damage.mjs";
+import { calculateNpcDefense } from "../helpers/defense.mjs";
 import RollDialog from "./roll-dialog.mjs";
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -13,6 +14,7 @@ export default class NpcSheet extends HandlebarsApplicationMixin(foundry.applica
     window: { resizable: true },
     form: { submitOnChange: true, closeOnSubmit: false },
     actions: {
+      editImage:     NpcSheet.#editImage,
       markHitBox:    NpcSheet.#markHitBox,
       rollAttribute: NpcSheet.#rollAttribute,
       rollSkill:     NpcSheet.#rollSkill,
@@ -26,6 +28,16 @@ export default class NpcSheet extends HandlebarsApplicationMixin(foundry.applica
   };
 
   get title() { return this.document.name; }
+
+  _onRender(context, options) {
+    super._onRender(context, options);
+    this.element.querySelectorAll("li[data-item-id]").forEach(row => {
+      row.addEventListener("dblclick", () => {
+        const item = this.document.items.get(row.dataset.itemId);
+        item?.sheet.render(true);
+      });
+    });
+  }
 
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
@@ -49,16 +61,32 @@ export default class NpcSheet extends HandlebarsApplicationMixin(foundry.applica
     }));
     context.weapons = this.document.items
       .filter(i => i.type === "weapon")
-      .map(i => ({
-        id: i.id,
-        name: i.name,
-        damageDice: i.system.damageDice,
-        damagePips: i.system.damagePips,
-        attackSkill: i.system.attackSkill,
-        range: i.system.range
-      }));
+      .map(i => {
+        const skillName = i.system.attackSkill.toLowerCase();
+        const skillItem = this.document.items.find(
+          s => s.type === "skill" && s.name.toLowerCase() === skillName
+        );
+        const attrKey   = skillItem?.system.attribute ?? "DEX";
+        const attr      = sys[attrKey] ?? sys.DEX;
+        const skillDice = attr.dice + (skillItem?.system.rank ?? 0);
+        const skillPips = attr.pips;
+        const attackSkillDisplay = skillPips > 0 ? `${skillDice}D+${skillPips}` : `${skillDice}D`;
+        return {
+          id: i.id,
+          name: i.name,
+          damageDice: i.system.damageDice,
+          damagePips: i.system.damagePips,
+          attackSkill: i.system.attackSkill,
+          attackSkillDisplay,
+          skillDice,
+          skillPips,
+          range: i.system.range
+        };
+      });
+    const defense = calculateNpcDefense(this.document);
     context.combatData = {
       hitBoxes,
+      defense,
       stunBoxes:       NpcSheet.#buildBoxArray(hitBoxes, sys.stunMarks),
       woundBoxes:      NpcSheet.#buildBoxArray(hitBoxes, sys.woundMarks),
       incapBoxes:      NpcSheet.#buildBoxArray(hitBoxes, sys.incapMarks),
@@ -80,6 +108,16 @@ export default class NpcSheet extends HandlebarsApplicationMixin(foundry.applica
    */
   static #buildBoxArray(hitBoxes, marks) {
     return Array.from({ length: hitBoxes }, (_, i) => ({ index: i, marked: i < marks }));
+  }
+
+  static async #editImage(_event, target) {
+    const attr = target.dataset.edit;
+    const current = foundry.utils.getProperty(this.document._source, attr);
+    const fp = new foundry.applications.apps.FilePicker.implementation({
+      current, type: "image",
+      callback: path => this.document.update({ [attr]: path })
+    });
+    fp.browse(current);
   }
 
   /**
@@ -172,12 +210,8 @@ export default class NpcSheet extends HandlebarsApplicationMixin(foundry.applica
     if (!weapon) return;
 
     const attackSkillName = weapon.system.attackSkill.toLowerCase();
-    const skillItem = this.document.items.find(
-      i => i.type === "skill" && i.name.toLowerCase() === attackSkillName
-    );
-
-    const skillDice = skillItem ? skillItem.system.dicePool : this.document.system.DEX.dice;
-    const skillPips  = skillItem ? skillItem.system.pips    : this.document.system.DEX.pips;
+    const skillDice = parseInt(target.dataset.skillDice) || this.document.system.DEX.dice;
+    const skillPips  = parseInt(target.dataset.skillPips) || 0;
 
     const targets = [...game.user.targets];
     const targetToken = targets[0];
@@ -191,6 +225,9 @@ export default class NpcSheet extends HandlebarsApplicationMixin(foundry.applica
     if (noTarget) {
       defenseLabel = game.i18n.localize("STARWARSD6.Combat.Difficulty");
       rawDefenseValue = Math.ceil(3.5 * skillDice);
+    } else if (targetActor.type === "npc") {
+      defenseLabel = game.i18n.localize("STARWARSD6.Combat.Defense");
+      rawDefenseValue = calculateNpcDefense(targetActor);
     } else if (RANGED_SKILLS.includes(attackSkillName)) {
       defenseLabel = game.i18n.localize("STARWARSD6.Combat.RangedDefense");
       rawDefenseValue = targetActor.system.rangedDefense;

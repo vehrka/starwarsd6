@@ -1,6 +1,7 @@
 import { rollWithWildDie, rollDamage } from "../helpers/dice.mjs";
 import { applyDamage, removeOneMark, resolveDamageTier } from "../helpers/damage.mjs";
 import { applyDarkSidePoint } from "../helpers/force.mjs";
+import { calculateNpcDefense } from "../helpers/defense.mjs";
 import RollDialog from "./roll-dialog.mjs";
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -43,7 +44,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
   _onRender(context, options) {
     super._onRender(context, options);
-    this.element.querySelectorAll("[data-item-id]").forEach(row => {
+    this.element.querySelectorAll("li[data-item-id]").forEach(row => {
       row.addEventListener("dblclick", () => {
         const item = this.document.items.get(row.dataset.itemId);
         item?.sheet.render(true);
@@ -366,6 +367,9 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     if (noTarget) {
       defenseLabel = game.i18n.localize("STARWARSD6.Combat.Difficulty");
       rawDefenseValue = Math.ceil(3.5 * skillDice);
+    } else if (targetActor.type === "npc") {
+      defenseLabel = game.i18n.localize("STARWARSD6.Combat.Defense");
+      rawDefenseValue = calculateNpcDefense(targetActor);
     } else if (RANGED_SKILLS.includes(attackSkillName)) {
       defenseLabel = game.i18n.localize("STARWARSD6.Combat.RangedDefense");
       rawDefenseValue = targetActor.system.rangedDefense;
