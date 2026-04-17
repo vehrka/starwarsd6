@@ -30,6 +30,14 @@ export default class NpcSheet extends HandlebarsApplicationMixin(foundry.applica
 
   get title() { return this.document.name; }
 
+  async _replaceHTML(result, content, options) {
+    const body = content.querySelector(".sheet-body");
+    const scrollTop = body?.scrollTop ?? 0;
+    await super._replaceHTML(result, content, options);
+    const newBody = content.querySelector(".sheet-body");
+    if (newBody && scrollTop) newBody.scrollTop = scrollTop;
+  }
+
   _onRender(context, options) {
     super._onRender(context, options);
     this.element.querySelectorAll("li[data-item-id]").forEach(row => {

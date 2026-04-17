@@ -69,13 +69,6 @@ Hooks.once("init", () => {
     label: "STARWARSD6.SheetClass.Item"
   });
 
-  // Clear fpSpentThisRound for all combatants when the round advances
-  Hooks.on("combatRound", (combat, _updateData, _options) => {
-    combat.combatants.forEach(c => {
-      c.actor?.setFlag("starwarsd6", "fpSpentThisRound", false);
-    });
-  });
-
   // Roll Damage button — appears on attack chat cards when the roll is a hit with a target
   Hooks.on("renderChatMessageHTML", (message, html) => {
     html.querySelectorAll(".roll-damage-btn:not([disabled])").forEach(btn => {

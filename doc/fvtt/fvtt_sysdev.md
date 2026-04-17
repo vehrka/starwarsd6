@@ -43,3 +43,38 @@ A good first milestone is:
 That gives you a working vertical slice without getting lost in every advanced feature at once. [foundryvtt](https://foundryvtt.com/article/module-development/)
 
 If you want, I can also give you a **minimal v13 system folder template** with example `system.json` and starter files.
+
+## Scroll preservation in single-part sheets
+
+`scrollable: [""]` on a PART and `scrollY` in `DEFAULT_OPTIONS` only work when the scrollable element **is the PART root**. For single-part sheets with CSS-based tabs (one template, `.tab.active` shown via CSS), neither mechanism works because the scroller is a child element that gets replaced wholesale.
+
+**Working pattern** — override `_replaceHTML` to save/restore scroll before/after the DOM swap:
+
+```js
+async _replaceHTML(result, content, options) {
+  // Save scroll positions of all tab sections
+  const scrolls = {};
+  content.querySelectorAll("section.tab[data-tab]").forEach(el => {
+    scrolls[el.dataset.tab] = el.scrollTop;
+  });
+  await super._replaceHTML(result, content, options);
+  // Restore after swap
+  content.querySelectorAll("section.tab[data-tab]").forEach(el => {
+    if (scrolls[el.dataset.tab]) el.scrollTop = scrolls[el.dataset.tab];
+  });
+}
+```
+
+For sheets without tabs (e.g. NPC with a single `.sheet-body` scroller), same pattern with a single element:
+
+```js
+async _replaceHTML(result, content, options) {
+  const body = content.querySelector(".sheet-body");
+  const scrollTop = body?.scrollTop ?? 0;
+  await super._replaceHTML(result, content, options);
+  const newBody = content.querySelector(".sheet-body");
+  if (newBody && scrollTop) newBody.scrollTop = scrollTop;
+}
+```
+
+**Alternative**: use one PART per tab with `scrollable: [""]` on each (tor2e/dnd5e pattern). More code, but Foundry handles scroll automatically.
