@@ -1,0 +1,13 @@
+{
+  "name": "{{name}}",
+  "type": "weapon",
+  "img": "icons/svg/sword.svg",
+  "effects": [],
+  "system": {
+    "damageDice": {{damageDice}},
+    "damagePips": {{damagePips}},
+    "attackSkill": "{{attackSkill}}",
+    "weaponBonus": {{weaponBonus}},
+    "range": "{{range}}"
+  }
+}

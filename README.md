@@ -85,6 +85,14 @@ Force-sensitive characters can own **Force Power** items. Each power lists its a
 
 ---
 
+## Compendium Data
+
+Source data for compendiums (weapons, armor, equipment, skills, force powers) lives in [`data/`](data/).
+
+Each subdirectory contains a CSV file and a JSON template ready to import via the [Data Toolbox](https://github.com/svenwerlen/fvtt-data-toolbox) Foundry module. See [`data/README.md`](data/README.md) for full import instructions.
+
+---
+
 ## Tech Stack
 
 - **Platform:** FoundryVTT v13 (minimum v13, no legacy support)

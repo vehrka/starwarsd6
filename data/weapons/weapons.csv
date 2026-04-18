@@ -1,0 +1,19 @@
+name,damageDice,damagePips,attackSkill,weaponBonus,range
+Typical Knife (+STR),1,0,Melee,0,
+Typical Throwing Knife (+STR),1,0,Melee,0,2-3/5/10
+Vibro-ax (+STR),3,1,Melee,0,
+Vibroblade (+STR),3,0,Melee,0,
+Lightsaber,5,0,Lightsaber,0,
+Slugthrower,3,0,Blaster,0,3-10/30/60
+Hold-Out Blaster,3,0,Blaster,0,3-4/8/12
+Sporting Blaster,3,1,Blaster,0,3-10/30/60
+Blaster Pistol,4,0,Blaster,0,3-10/30/120
+Heavy Blaster Pistol,5,0,Blaster,0,3-7/25/50
+Blaster Carbine,5,0,Blaster,0,3-25/50/250
+Blaster Rifle,5,0,Blaster,0,3-30/100/300
+Sporting Blaster Rifle,4,1,Blaster,0,3-40/120/350
+Light Repeating Blaster,6,0,Blaster,0,3-50/120/300
+E-Web Repeating Blaster,8,0,Blaster,0,3-75/200/500
+Bowcaster,4,0,Blaster,0,3-10/30/50
+Fragmentation Grenade INNERMOST RADIUS,5,0,Melee,0,3-7/20/40
+Thermal Detonator INNERMOST RADIUS,10,0,Melee,0,3-4/7/12

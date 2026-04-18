@@ -335,7 +335,7 @@
 }
 
 .starwarsd6.sheet .inv-col-range {
-  width: 4em;
+  width: 7em;
   text-align: center;
   font-weight: bold;
   color: #333;
@@ -362,7 +362,7 @@
 .starwarsd6.sheet .inv-col-label.inv-col-skill  { width: 6em; flex-shrink: 0; text-align: center; font-weight: bold; font-size: 0.9em; color: #333; }
 
 .starwarsd6.sheet .inv-col-range,
-.starwarsd6.sheet .inv-col-label.inv-col-range  { width: 4em; flex-shrink: 0; text-align: center; font-weight: bold; font-size: 0.9em; color: #333; }
+.starwarsd6.sheet .inv-col-label.inv-col-range  { width: 7em; flex-shrink: 0; text-align: center; font-weight: bold; font-size: 0.9em; color: #333; }
 
 .starwarsd6.sheet .inv-col-equip,
 .starwarsd6.sheet .inv-col-label.inv-col-equip  { width: 3.5em; flex-shrink: 0; text-align: center; overflow: hidden; white-space: nowrap; font-size: 0.9em; font-weight: bold; color: #555; }
