@@ -1,0 +1,35 @@
+name,attribute,rank,rankPips
+Blaster,DEX,0,0
+Brawling Parry,DEX,0,0
+Dodge,DEX,0,0
+Melee Combat,DEX,0,0
+Melee Parry,DEX,0,0
+Alien Species,KNO,0,0
+Languages,KNO,0,0
+Planetary Systems,KNO,0,0
+Streetwise,KNO,0,0
+Survival,KNO,0,0
+Astrogation,MEC,0,0
+Beast Riding,MEC,0,0
+Repulsorlift Operation,MEC,0,0
+Space Transports,MEC,0,0
+Starfighter Piloting,MEC,0,0
+Starship Gunnery,MEC,0,0
+Bargain,PER,0,0
+Con,PER,0,0
+Gambling,PER,0,0
+Search,PER,0,0
+Sneak,PER,0,0
+Brawling,STR,0,0
+Climbing/Jumping,STR,0,0
+Stamina,STR,0,0
+Computer Programming/Repair,TEC,0,0
+Droid Programming,TEC,0,0
+Droid Repair,TEC,0,0
+First Aid,TEC,0,0
+Medicine,TEC,0,0
+Space Transports Repair,TEC,0,0
+Starfighter Repair,TEC,0,0
+Control,FORCE,0,0
+Sense,FORCE,0,0
+Alter,FORCE,0,0

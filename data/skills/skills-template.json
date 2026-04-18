@@ -1,0 +1,11 @@
+{
+  "name": "{{name}}",
+  "type": "skill",
+  "img": "icons/svg/aura.svg",
+  "effects": [],
+  "system": {
+    "attribute": "{{attribute}}",
+    "rank": {{rank}},
+    "rankPips": {{rankPips}}
+  }
+}

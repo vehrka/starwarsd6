@@ -1,0 +1,10 @@
+{
+  "name": "{{name}}",
+  "type": "equipment",
+  "img": "icons/svg/item-bag.svg",
+  "effects": [],
+  "system": {
+    "description": "{{description}}",
+    "quantity": {{quantity}}
+  }
+}

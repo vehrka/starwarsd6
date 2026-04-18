@@ -1,0 +1,17 @@
+{
+  "name": "{{name}}",
+  "type": "forcePower",
+  "img": "icons/svg/teleport.svg",
+  "effects": [],
+  "system": {
+    "controlDifficulty": "{{controlDifficulty}}",
+    "senseDifficulty": "{{senseDifficulty}}",
+    "alterDifficulty": "{{alterDifficulty}}",
+    "requiredPowers": "{{requiredPowers}}",
+    "canKeepUp": {{canKeepUp}},
+    "keptUp": {{keptUp}},
+    "darkSideWarning": {{darkSideWarning}},
+    "timeToUse": "{{timeToUse}}",
+    "effect": "{{effect}}"
+  }
+}
