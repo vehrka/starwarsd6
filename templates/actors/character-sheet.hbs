@@ -209,7 +209,7 @@
     {{#if weapons.length}}
     <ul class="inv-list">
       {{#each weapons as |weapon|}}
-      <li class="inv-row">
+      <li class="inv-row" data-item-id="{{weapon.id}}">
         <span class="inv-name">{{weapon.name}}</span>
         <span class="inv-col-damage">{{weapon.damageDice}}D{{#if weapon.damagePips}}+{{weapon.damagePips}}{{/if}}</span>
         <span class="inv-col-skill">{{weapon.attackSkill}}</span>
@@ -242,7 +242,7 @@
     {{#if armors.length}}
     <ul class="inv-list">
       {{#each armors as |armor|}}
-      <li class="inv-row">
+      <li class="inv-row" data-item-id="{{armor.id}}">
         <span class="inv-name">{{armor.name}}</span>
         <span class="inv-col-damage"></span>
         <span class="inv-col-skill"></span>
@@ -275,7 +275,7 @@
     {{#if equipment.length}}
     <ul class="inv-list">
       {{#each equipment as |eq|}}
-      <li class="inv-row">
+      <li class="inv-row" data-item-id="{{eq.id}}">
         <span class="inv-name">{{eq.name}}</span>
         <span class="inv-col-damage"></span>
         <span class="inv-col-skill"></span>

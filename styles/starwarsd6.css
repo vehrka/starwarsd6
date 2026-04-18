@@ -649,6 +649,8 @@
   min-height: 60px;
   resize: vertical;
   box-sizing: border-box;
+  color: #1a1a1a;
+  background: #fff;
 }
 
 .starwarsd6.sheet.npc .npc-section {
@@ -712,6 +714,8 @@
 .starwarsd6.sheet.item .sheet-body textarea {
   flex: 1;
   resize: vertical;
+  color: #1a1a1a;
+  background: #fff;
 }
 
 /* ── Force tab overrides ─────────────────────────────────────── */
@@ -883,7 +887,8 @@
   width: 100%;
   min-height: 4em;
   border: 1px solid #aaa;
-  background: transparent;
+  background: #fff;
+  color: #1a1a1a;
   font-size: 0.85em;
   resize: vertical;
   padding: 4px;
