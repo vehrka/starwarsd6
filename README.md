@@ -49,7 +49,7 @@ Click any **skill or attribute** to open the Roll Dialog:
 - Roll of **6**: explodes — the die is re-rolled and the new value added (repeatedly).
 - Roll of **1**: complication — annotated in the chat card; GM decides the narrative consequence.
 
-**Spending a Character Point:** After a roll, if you have CP remaining, a **Spend CP** button appears in the chat card. Click it to roll one extra die and add it to your total. CP decrements by 1.
+**Spending a Character Point:** After a roll, if you have CP remaining, a **Spend CP** button appears in the chat card. Click it to roll one extra die and add it to your total. CP decrements by 1. On a combat attack roll, if spending CP pushes the total above the defense value (MISS → HIT) and a target was selected, the **Roll Damage** button appears automatically.
 
 ### Combat
 

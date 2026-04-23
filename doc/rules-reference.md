@@ -480,8 +480,9 @@ Each Force power is documented with the following fields:
 
 ### Character Points
 
-- **During play:** Spend 1 Character Point to gain **+1D** on a single roll. May be spent **after** rolling but **before** the GM announces the result. Multiple Character Points may be spent on the same roll (each adds +1D).
-- **Restriction:** Cannot spend Character Points in a round where a Force Point is spent.
+- **During play:** Spend 1 Character Point to gain **+1D** on a single roll. May be spent **after** rolling but **before** the GM announces the result. Multiple Character Points may be spent on the same roll (each adds +1D). Each CP adds one plain d6 — no wild die, no pips.
+- **System implementation:** The chat card shows a repeatable "Spend CP (+1D)" button. Each click rolls 1d6, appends it to the Normal dice list, updates the running total in-place, and decrements `characterPoints` by 1. Button disappears when CP reaches 0. On a combat attack card, if CP spend causes the running total to cross the defense value (MISS → HIT) and a target was selected, the **Roll Damage** button is automatically injected into the card — identical to the button rendered at roll time for an initial HIT.
+- **Restriction:** Cannot spend Character Points in a round where a Force Point is spent. The CP button is not rendered on cards where a Force Point was used.
 - **Between adventures:** Character Points are spent to permanently improve skills
 
 ### Force Points

@@ -215,9 +215,11 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     );
     rollResult.total = Math.max(0, rollResult.total - penaltyPips);
 
+    const cp = this.document.system.characterPoints;
+    const canSpendCp = !useForcePoint && cp > 0;
     await CharacterSheet.#postRollToChat(
       this.document, skill.name, rollResult, numActions,
-      { keepUpPenalty, penaltyDice, penaltyPips, difficulty }
+      { keepUpPenalty, penaltyDice, penaltyPips, difficulty, canSpendCp, rollType: "skill" }
     );
   }
 
@@ -251,9 +253,11 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     const rollResult = await rollWithWildDie(attr.dice, attr.pips, penalty, undefined, { doubled: useForcePoint });
     rollResult.total = Math.max(0, rollResult.total - penaltyPips);
 
+    const cp = this.document.system.characterPoints;
+    const canSpendCp = !useForcePoint && cp > 0;
     await CharacterSheet.#postRollToChat(
       this.document, attrLabel, rollResult, numActions,
-      { keepUpPenalty, penaltyDice, penaltyPips, difficulty }
+      { keepUpPenalty, penaltyDice, penaltyPips, difficulty, canSpendCp, rollType: "attribute" }
     );
   }
 
@@ -276,6 +280,10 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     return `<div class="roll-penalties">${lines.join(" · ")}</div>`;
   }
 
+  static #buildCpActionHtml(actorId) {
+    return `<div class="cp-action"><button type="button" class="spend-cp-btn" data-actor-id="${actorId}">${game.i18n.localize("STARWARSD6.CP.SpendCP")}</button></div>`;
+  }
+
   /**
    * Post a roll result to the chat log.
    * @param {Actor} actor
@@ -285,7 +293,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
    * @param {object} [options={}]
    * @param {number} [options.keepUpPenalty=0]
    */
-  static async #postRollToChat(actor, label, result, numActions, { keepUpPenalty = 0, penaltyDice = 0, penaltyPips = 0, difficulty = null } = {}) {
+  static async #postRollToChat(actor, label, result, numActions, { keepUpPenalty = 0, penaltyDice = 0, penaltyPips = 0, difficulty = null, canSpendCp = false, rollType = "skill" } = {}) {
     const speaker = ChatMessage.getSpeaker({ actor });
     const effectiveDice = result.normalDice.length + 1; // normal + wild
 
@@ -318,14 +326,17 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
         })()
       : "";
 
+    const cpActionStr = canSpendCp ? CharacterSheet.#buildCpActionHtml(actor.id) : "";
+
     const content = `
-      <div class="starwarsd6 roll-result">
+      <div class="starwarsd6 roll-result" data-actor-id="${actor.id}" data-difficulty="${hasDifficulty ? difficulty : ""}" data-roll-type="${rollType}">
         <h3>${label}</h3>
         <div class="roll-formula">${effectiveDice}D${pipsStr}</div>
         ${penaltyStr}
         <div class="roll-dice">${normalStr}Wild: ${wildStr}${explosion}${complications}</div>
         <div class="roll-total"><strong>${game.i18n.localize("STARWARSD6.Roll.Total")}: <span class="total-value">${result.total}</span></strong></div>
         ${difficultyStr}
+        ${cpActionStr}
       </div>`;
 
     await showDiceAnimation(result.normalDice, result.wildRolls, "character");
@@ -412,10 +423,12 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     const defenseValue = Number.isFinite(difficulty) && difficulty > 0 ? difficulty : 0;
     const isHit = rollResult.total >= defenseValue;
+    const cp = this.document.system.characterPoints;
+    const canSpendCp = !useForcePoint && cp > 0;
     await CharacterSheet.#postAttackToChat(
       this.document, weapon, rollResult, numActions, defenseLabel, defenseValue,
       targetActor, isHit, targetToken?.id ?? null,
-      { keepUpPenalty, penaltyDice, penaltyPips }
+      { keepUpPenalty, penaltyDice, penaltyPips, canSpendCp }
     );
   }
 
@@ -501,7 +514,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
    * @param {number} [options.penaltyDice=0]
    * @param {number} [cpOptions.penaltyPips=0]
    */
-  static async #postAttackToChat(actor, weapon, result, numActions, defenseLabel, defenseValue, targetActor, isHit, targetTokenId = null, { keepUpPenalty = 0, penaltyDice = 0, penaltyPips = 0 } = {}) {
+  static async #postAttackToChat(actor, weapon, result, numActions, defenseLabel, defenseValue, targetActor, isHit, targetTokenId = null, { keepUpPenalty = 0, penaltyDice = 0, penaltyPips = 0, canSpendCp = false } = {}) {
     const speaker = ChatMessage.getSpeaker({ actor });
     const effectiveDice = result.normalDice.length + 1;
 
@@ -553,8 +566,18 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
         }}
       : {};
 
+    const cpActionStr = canSpendCp ? CharacterSheet.#buildCpActionHtml(actor.id) : "";
+
     const content = `
-      <div class="starwarsd6 roll-result">
+      <div class="starwarsd6 roll-result"
+           data-actor-id="${actor.id}"
+           data-difficulty="${defenseValue}"
+           data-roll-type="combat"
+           data-target-actor-id="${targetActor?.id ?? ""}"
+           data-target-token-id="${targetTokenId ?? ""}"
+           data-damage-dice="${weapon.system.damageDice}"
+           data-damage-pips="${weapon.system.damagePips}"
+           data-damage-base="${targetActor?.system.damageBase ?? ""}">
         <h3>${game.i18n.localize("STARWARSD6.Combat.AttackRoll")}: ${weapon.name}</h3>
         ${targetLine}
         <div class="roll-formula">${effectiveDice}D${pipsStr}</div>
@@ -563,6 +586,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
         <div class="roll-total"><strong>${game.i18n.localize("STARWARSD6.Roll.Total")}: <span class="total-value">${result.total}</span></strong></div>
         <div class="roll-defense">${defenseLabel}: ${defenseValue} — ${hitLabel}</div>
         ${rollDamageBtn}
+        ${cpActionStr}
       </div>`;
 
     await showDiceAnimation(result.normalDice, result.wildRolls, "character");
@@ -601,11 +625,13 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     const rollResult = await rollWithWildDie(totalDice, totalPips, penalty, undefined, { doubled: useForcePoint });
     rollResult.total = Math.max(0, rollResult.total - system.penaltyPips);
 
+    const cp = system.characterPoints;
+    const canSpendCp = !useForcePoint && cp > 0;
     const label = game.i18n.localize(`STARWARSD6.Force.Skill.${skillKey}`);
     await CharacterSheet.#postForceRollToChat(
       this.document, label, rollResult, numActions, keepUpPenalty,
       bonus, forceDifficultyModifier,
-      { penaltyDice: system.penaltyDice, penaltyPips: system.penaltyPips }
+      { penaltyDice: system.penaltyDice, penaltyPips: system.penaltyPips, canSpendCp }
     );
   }
 
@@ -619,7 +645,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
    * @param {{ bonusDice: number, bonusPips: number }} bonus
    * @param {number} forceDifficultyModifier
    */
-  static async #postForceRollToChat(actor, label, result, numActions, keepUpPenalty, bonus, forceDifficultyModifier, { penaltyDice = 0, penaltyPips = 0 } = {}) {
+  static async #postForceRollToChat(actor, label, result, numActions, keepUpPenalty, bonus, forceDifficultyModifier, { penaltyDice = 0, penaltyPips = 0, canSpendCp = false } = {}) {
     const speaker = ChatMessage.getSpeaker({ actor });
     const effectiveDice = result.normalDice.length + 1;
 
@@ -646,8 +672,10 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
       : "";
     const penaltyStr = CharacterSheet.#buildPenaltyLines(numActions, keepUpPenalty, penaltyDice, penaltyPips);
 
+    const cpActionStr = canSpendCp ? CharacterSheet.#buildCpActionHtml(actor.id) : "";
+
     const content = `
-      <div class="starwarsd6 roll-result">
+      <div class="starwarsd6 roll-result" data-actor-id="${actor.id}" data-difficulty="" data-roll-type="force">
         <h3>${label}</h3>
         <div class="roll-formula">${effectiveDice}D${pipsStr}</div>
         ${bonusStr}
@@ -655,6 +683,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
         ${penaltyStr}
         <div class="roll-dice">${normalStr}Wild: ${wildStr}${explosion}${complications}</div>
         <div class="roll-total"><strong>${game.i18n.localize("STARWARSD6.Roll.Total")}: <span class="total-value">${result.total}</span></strong></div>
+        ${cpActionStr}
       </div>`;
 
     await showDiceAnimation(result.normalDice, result.wildRolls, "character");
