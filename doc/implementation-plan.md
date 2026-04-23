@@ -241,13 +241,21 @@ penaltyPips = -1 per stunMark (flat roll penalty, not dice)
 
 ### Interaction flow:
 
-**Character Point:** After roll resolves, "Spend CP" button in chat card (if actor has CP > 0). Clicking rolls 1 extra die, adds to total, decrements `characterPoints` via `actor.update()`.
+**Character Point:** After roll resolves, a **"Spend CP (+1D)"** button appears on the chat card when `canSpendCp = !useForcePoint && cp > 0`. The button is **repeatable** — players click it as many times as they have CP. Each click:
+1. Rolls 1d6 via `rollExtraDie()` (no wild die, no pips).
+2. Appends the die face to the Normal dice list in the card (in-place DOM mutation).
+3. Updates the `.total-value` span in both stored (`chatMsg.update({ content })`) and live DOM.
+4. Recomputes the HIT/MISS or SUCCESS/FAILURE label against the difficulty stored in `data-difficulty` on the container.
+5. Decrements `actor.system.characterPoints` by 1 via `actor.update()`.
+6. Removes the `.cp-action` block (button + wrapper) when CP reaches 0.
 
-**Force Point:** Checkbox in `RollDialog`. If checked, `doubled = true` → `effectiveDice = dice × 2`. Decrements `forcePoints` via `actor.update()`.
+No flag tracking. No new `ChatMessage.create` calls. The button wiring is in `Hooks.on("renderChatMessageHTML", ...)` in `starwarsd6.mjs`, mirroring the damage/hit-box button pattern. Each roll card embeds `data-actor-id`, `data-difficulty`, `data-roll-type`, `data-target-actor-id`, `data-target-token-id`, `data-damage-dice`, `data-damage-pips`, and `data-damage-base` on the `.starwarsd6.roll-result` container. On a combat card, if CP spend causes a MISS→HIT transition and a target was selected, the handler automatically injects the `.damage-action` / `.roll-damage-btn` block into both stored content and live DOM (feat025).
+
+**Force Point:** Checkbox in `RollDialog`. If checked, `doubled = true` → `effectiveDice = dice × 2`. Decrements `forcePoints` via `actor.update()`. When FP is spent, `canSpendCp` is false — no CP button rendered on that card.
 
 **Mutual exclusivity:** No longer enforced by code. GM manages at the table.
 
-**Testing:** CP=3, roll skill, click "Spend CP" → +1D added, CP→2. FP spend doubles dice regardless of how many times FP has been spent this round.
+**Testing:** CP=3, roll skill (no FP), card shows "Spend CP (+1D)" button. Click → +1D added to Normal list, total updates, CP→2. Click twice more → CP→0, button removed. FP spend: no CP button on card.
 
 ---
 

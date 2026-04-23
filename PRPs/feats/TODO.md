@@ -1,7 +1,0 @@
-- [x] NPCs Attack rolls
-- [x] No need for Force check when creating new skills
-- [x] A button to Remove Skills from Character Sheet
-- [ ] Increase Rank without opening the skill sheet
-- [x] When rolling, add a field for the difficulty
-    - [x] The field is a Dropdown with the Range name, Use table in rules for setting difficulty
-    - [ ] Rolling dice for Solo mode?

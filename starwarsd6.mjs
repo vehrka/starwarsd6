@@ -12,7 +12,7 @@ import CharacterSheet from "./modules/apps/character-sheet.mjs";
 import NpcSheet from "./modules/apps/npc-sheet.mjs";
 import SkillSheet from "./modules/apps/skill-sheet.mjs";
 import ItemSheet from "./modules/apps/item-sheet.mjs";
-import { rollDamage } from "./modules/helpers/dice.mjs";
+import { rollDamage, rollExtraDie } from "./modules/helpers/dice.mjs";
 import { showRollAnimation } from "./modules/helpers/dsn.mjs";
 import { applyDamage, resolveDamageTier } from "./modules/helpers/damage.mjs";
 import { handleSocketMessage, requestApplyDamage } from "./modules/helpers/socket.mjs";
@@ -146,6 +146,142 @@ Hooks.once("init", () => {
         const doc = parser.parseFromString(chatMsg.content, "text/html");
         const markBtn = doc.querySelector(".mark-hit-box-btn");
         if (markBtn) markBtn.setAttribute("disabled", "disabled");
+        await chatMsg.update({ content: doc.body.firstElementChild.outerHTML });
+      });
+    });
+
+    // Spend CP button — repeatable per card; each click adds 1d6 to the roll total
+    html.querySelectorAll(".spend-cp-btn:not([disabled])").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const actorId = btn.dataset.actorId;
+        const actor = game.actors.get(actorId);
+        if (!actor || actor.type !== "character") return;
+        const cp = actor.system.characterPoints;
+        if (cp <= 0) return;
+
+        const dieFace = await rollExtraDie();
+
+        const chatMsg = game.messages.get(message.id);
+        if (!chatMsg) return;
+
+        // Mutate stored content
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(chatMsg.content, "text/html");
+        const container = doc.querySelector(".starwarsd6.roll-result");
+        if (!container) return;
+
+        // Update stored total
+        const totalSpan = container.querySelector(".total-value");
+        const oldTotal = parseInt(totalSpan?.textContent) || 0;
+        const newTotal = oldTotal + dieFace;
+        if (totalSpan) totalSpan.textContent = String(newTotal);
+
+        // Append new d6 to Normal dice list in stored content
+        const rollDiceEl = container.querySelector(".roll-dice");
+        if (rollDiceEl) {
+          const diceHtml = rollDiceEl.innerHTML;
+          if (/Normal:\s*\[/.test(diceHtml)) {
+            rollDiceEl.innerHTML = diceHtml.replace(
+              /Normal:\s*\[([^\]]*)\]/,
+              (_, inner) => `Normal: [${inner}${inner.trim() ? ", " : ""}${dieFace}]`
+            );
+          } else {
+            rollDiceEl.innerHTML = `Normal: [${dieFace}] | ` + diceHtml;
+          }
+        }
+
+        // Recompute result label in stored content
+        const difficulty = parseInt(container.dataset.difficulty);
+        const rollType = container.dataset.rollType;
+        const wasHit = Number.isFinite(difficulty) && difficulty > 0 && oldTotal >= difficulty;
+        if (Number.isFinite(difficulty) && difficulty > 0) {
+          const isSuccess = newTotal >= difficulty;
+          if (rollType === "combat") {
+            const span = container.querySelector(".roll-defense .hit, .roll-defense .miss");
+            if (span) {
+              span.className = isSuccess ? "hit" : "miss";
+              span.textContent = game.i18n.localize(isSuccess ? "STARWARSD6.Combat.Hit" : "STARWARSD6.Combat.Miss");
+            }
+            // Inject damage button on MISS→HIT transition
+            if (!wasHit && isSuccess) {
+              const targetActorId = container.dataset.targetActorId;
+              if (targetActorId) {
+                const alreadyHasDmgBtn = container.querySelector(".roll-damage-btn");
+                if (!alreadyHasDmgBtn) {
+                  const dmgDiv = doc.createElement("div");
+                  dmgDiv.className = "damage-action";
+                  dmgDiv.innerHTML = `<button type="button" class="roll-damage-btn"
+                    data-target-actor-id="${targetActorId}"
+                    data-target-token-id="${container.dataset.targetTokenId}"
+                    data-damage-dice="${container.dataset.damageDice}"
+                    data-damage-pips="${container.dataset.damagePips}"
+                    data-damage-base="${container.dataset.damageBase}">
+                    ${game.i18n.localize("STARWARSD6.Combat.RollDamage")}
+                  </button>`;
+                  const cpBlock = container.querySelector(".cp-action");
+                  if (cpBlock) container.insertBefore(dmgDiv, cpBlock);
+                  else container.appendChild(dmgDiv);
+                  // Mirror to live DOM — cloneNode required (separate DOM trees)
+                  const liveContainer = html.querySelector(".starwarsd6.roll-result");
+                  const liveCpBlock = liveContainer?.querySelector(".cp-action");
+                  const liveDmgDiv = dmgDiv.cloneNode(true);
+                  if (liveCpBlock) liveContainer.insertBefore(liveDmgDiv, liveCpBlock);
+                  else liveContainer?.appendChild(liveDmgDiv);
+                }
+              }
+            }
+          } else {
+            const span = container.querySelector(".roll-difficulty .success, .roll-difficulty .failure");
+            if (span) {
+              span.className = isSuccess ? "success" : "failure";
+              span.textContent = game.i18n.localize(isSuccess ? "STARWARSD6.RollSuccess" : "STARWARSD6.RollFailure");
+            }
+          }
+        }
+
+        // Decrement CP
+        const newCp = cp - 1;
+        await actor.update({ "system.characterPoints": newCp });
+
+        // Remove button block in stored content when CP exhausted
+        if (newCp <= 0) {
+          const block = container.querySelector(".cp-action");
+          if (block) block.remove();
+        }
+
+        // Mirror mutations onto live DOM
+        const liveContainer = html.querySelector(".starwarsd6.roll-result");
+        if (liveContainer) {
+          const liveTotal = liveContainer.querySelector(".total-value");
+          if (liveTotal) liveTotal.textContent = String(newTotal);
+
+          const liveDice = liveContainer.querySelector(".roll-dice");
+          if (liveDice && rollDiceEl) liveDice.innerHTML = rollDiceEl.innerHTML;
+
+          if (Number.isFinite(difficulty) && difficulty > 0) {
+            if (rollType === "combat") {
+              const storedSpan = container.querySelector(".roll-defense .hit, .roll-defense .miss");
+              const liveSpan = liveContainer.querySelector(".roll-defense .hit, .roll-defense .miss");
+              if (liveSpan && storedSpan) {
+                liveSpan.className = storedSpan.className;
+                liveSpan.textContent = storedSpan.textContent;
+              }
+            } else {
+              const storedSpan = container.querySelector(".roll-difficulty .success, .roll-difficulty .failure");
+              const liveSpan = liveContainer.querySelector(".roll-difficulty .success, .roll-difficulty .failure");
+              if (liveSpan && storedSpan) {
+                liveSpan.className = storedSpan.className;
+                liveSpan.textContent = storedSpan.textContent;
+              }
+            }
+          }
+
+          if (newCp <= 0) {
+            const liveBlock = liveContainer.querySelector(".cp-action");
+            if (liveBlock) liveBlock.remove();
+          }
+        }
+
         await chatMsg.update({ content: doc.body.firstElementChild.outerHTML });
       });
     });
