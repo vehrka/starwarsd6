@@ -315,7 +315,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
 
     const penaltyStr = CharacterSheet.#buildPenaltyLines(numActions, keepUpPenalty, penaltyDice, penaltyPips);
 
-    const hasDifficulty = Number.isFinite(difficulty) && difficulty > 0;
+    const hasDifficulty = Number.isFinite(difficulty);
     const difficultyStr = hasDifficulty
       ? (() => {
           const isSuccess = result.total >= difficulty;
@@ -623,7 +623,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
     const keepUpPenalty = system.keepUpPenalty ?? 0;
     const penalty = (numActions - 1) + keepUpPenalty + system.penaltyDice;
     const rollResult = await rollWithWildDie(totalDice, totalPips, penalty, undefined, { doubled: useForcePoint });
-    rollResult.total = Math.max(0, rollResult.total - system.penaltyPips);
+    rollResult.total = Math.max(0, rollResult.total - system.penaltyPips - forceDifficultyModifier);
 
     const cp = system.characterPoints;
     const canSpendCp = !useForcePoint && cp > 0;
@@ -668,7 +668,7 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
       ? `<div class="force-bonus">${game.i18n.localize("STARWARSD6.Force.ChatDSPBonus")}: +${bonus.bonusDice}D+${bonus.bonusPips}</div>`
       : "";
     const diffModStr = forceDifficultyModifier > 0
-      ? `<div class="force-diff-mod">${game.i18n.localize("STARWARSD6.Force.ChatDiffModifier")}: +${forceDifficultyModifier}</div>`
+      ? `<div class="force-diff-mod">${game.i18n.localize("STARWARSD6.Force.ChatDiffModifier")}: −${forceDifficultyModifier}</div>`
       : "";
     const penaltyStr = CharacterSheet.#buildPenaltyLines(numActions, keepUpPenalty, penaltyDice, penaltyPips);
 

@@ -17,6 +17,16 @@ export default class RollDialog extends HandlebarsApplicationMixin(foundry.appli
     form: { template: "systems/starwarsd6/templates/dice/roll-dialog.hbs" }
   };
 
+  static #DIFFICULTY_TIERS = [
+    { labelKey: "STARWARSD6.Difficulty.VeryEasy",      mod: -10 },
+    { labelKey: "STARWARSD6.Difficulty.Easy",          mod: -5  },
+    { labelKey: "STARWARSD6.Difficulty.Normal",        mod: 0   },
+    { labelKey: "STARWARSD6.Difficulty.Moderate",      mod: 5   },
+    { labelKey: "STARWARSD6.Difficulty.Difficult",     mod: 10  },
+    { labelKey: "STARWARSD6.Difficulty.VeryDifficult", mod: 15  },
+    { labelKey: "STARWARSD6.Difficulty.Impossible",    mod: 20  },
+  ];
+
   // Promise resolver — set by prompt(), called by submit/close handlers
   #resolve = null;
   #resolved = false;
@@ -57,6 +67,7 @@ export default class RollDialog extends HandlebarsApplicationMixin(foundry.appli
     context.isForceRoll = this.#isForceRoll;
     context.showDifficulty = this.#showDifficulty;
     context.defaultDifficulty = this.#defaultDifficulty;
+    context.difficultyTiers = RollDialog.#DIFFICULTY_TIERS.map(t => ({ ...t, isDefault: t.mod === 0 }));
     return context;
   }
 
@@ -68,8 +79,11 @@ export default class RollDialog extends HandlebarsApplicationMixin(foundry.appli
     const forceDifficultyModifier = this.#isForceRoll
       ? Math.min(30, Math.max(0, parseInt(formData.object.forceDifficultyModifier ?? "0")))
       : 0;
+    const tierMod = this.#showDifficulty
+      ? parseInt(formData.object.difficultyTier ?? "0")
+      : 0;
     const difficulty = this.#showDifficulty
-      ? parseInt(formData.object.difficulty ?? "0")
+      ? Math.max(0, parseInt(formData.object.difficulty ?? "0") + tierMod)
       : null;
     if (!this.#resolved) {
       this.#resolved = true;
