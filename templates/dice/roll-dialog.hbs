@@ -1,47 +1,64 @@
 <div class="roll-dialog-content">
+  <h2 class="dialog-title">{{localize "STARWARSD6.RollDialog.SectionTitle"}}</h2>
+
   <div class="form-group">
     <label for="num-actions">{{localize "STARWARSD6.RollDialog.NumActions"}}</label>
     <input type="number" id="num-actions" name="numActions" value="1" min="1" max="4" autofocus />
   </div>
-  {{#if canSpendFP}}
+
+  {{#unless isForceRoll}}
   <div class="form-group">
-    <label>
-      <input type="checkbox" name="useForcePoint" {{#unless hasFP}}disabled{{/unless}} />
-      {{localize "STARWARSD6.FP.SpendFP"}}
-      {{#unless hasFP}}<span class="no-fp">({{localize "STARWARSD6.FP.NoFP"}})</span>{{/unless}}
-    </label>
+    <label>{{localize "STARWARSD6.Difficulty.Label"}}</label>
+    <div class="difficulty-inputs">
+      {{#if showDifficulty}}
+      <input type="number" name="difficulty" value="{{defaultDifficulty}}" min="0" max="99" />
+      {{/if}}
+      <div class="select-wrapper">
+        <select name="difficultyTier">
+          {{#each difficultyTiers}}
+          <option value="{{this.mod}}"{{#if this.isDefault}} selected{{/if}}>
+            {{localize this.labelKey}}
+          </option>
+          {{/each}}
+        </select>
+      </div>
+    </div>
   </div>
-  {{/if}}
+  {{/unless}}
+
   {{#if isForceRoll}}
   <div class="form-group">
     <label>{{localize "STARWARSD6.Force.DifficultyModifier"}}</label>
     <input type="number" name="forceDifficultyModifier" value="0" min="0" max="30" />
   </div>
   {{/if}}
-  {{#unless isForceRoll}}
-  <div class="form-group">
-    <label>{{localize "STARWARSD6.Difficulty.Label"}}</label>
-    <select name="difficultyTier">
-      {{#each difficultyTiers}}
-      <option value="{{this.mod}}"{{#if this.isDefault}} selected{{/if}}>
-        {{localize this.labelKey}}
-      </option>
-      {{/each}}
-    </select>
-  </div>
-  {{/unless}}
-  {{#if showDifficulty}}
-  <div class="form-group">
-    <label>{{localize "STARWARSD6.RollDifficulty"}}</label>
-    <input type="number" name="difficulty" value="{{defaultDifficulty}}" min="0" max="99" />
+
+  {{#if canSpendFP}}
+  <div class="form-group fp-group">
+    <label class="fp-label">{{localize "STARWARSD6.FP.SpendFP"}}</label>
+    <div class="fp-toggle-wrapper">
+      <input type="checkbox" id="use-force-point" name="useForcePoint"
+             class="fp-checkbox" {{#unless hasFP}}disabled{{/unless}} />
+      <label for="use-force-point" class="fp-toggle-label{{#unless hasFP}} fp-disabled{{/unless}}">
+        <span class="fp-toggle-track">
+          <span class="fp-toggle-thumb"></span>
+        </span>
+      </label>
+      <i class="fa-solid fa-jedi fp-icon{{#unless hasFP}} fp-icon-disabled{{/unless}}"></i>
+    </div>
   </div>
   {{/if}}
-  <footer class="sheet-footer form-footer">
-    <button type="submit" class="default">
-      <i class="fas fa-dice"></i>
+
+  <div class="dialog-divider">
+    <i class="fa-solid fa-angles-down"></i>
+  </div>
+
+  <footer class="sheet-footer">
+    <button type="submit" class="roll-btn">
+      <i class="fas fa-dice-d6"></i>
       {{localize "STARWARSD6.RollDialog.Roll"}}
     </button>
-    <button type="button" data-action="close">
+    <button type="button" data-action="close" class="cancel-btn">
       {{localize "STARWARSD6.RollDialog.Cancel"}}
     </button>
   </footer>
