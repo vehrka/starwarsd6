@@ -18,6 +18,18 @@
     <input type="number" name="forceDifficultyModifier" value="0" min="0" max="30" />
   </div>
   {{/if}}
+  {{#unless isForceRoll}}
+  <div class="form-group">
+    <label>{{localize "STARWARSD6.Difficulty.Label"}}</label>
+    <select name="difficultyTier">
+      {{#each difficultyTiers}}
+      <option value="{{this.mod}}"{{#if this.isDefault}} selected{{/if}}>
+        {{localize this.labelKey}}
+      </option>
+      {{/each}}
+    </select>
+  </div>
+  {{/unless}}
   {{#if showDifficulty}}
   <div class="form-group">
     <label>{{localize "STARWARSD6.RollDifficulty"}}</label>
