@@ -1,0 +1,99 @@
+<div class="starwarsd6 print-sheet">
+
+  <header class="ps-header">
+    <img src="{{document.img}}" class="ps-portrait" alt="{{document.name}}" />
+    <div class="ps-header-info">
+      <h1 class="ps-name">{{document.name}}</h1>
+      <div class="ps-bio-row">
+        <span class="ps-label">Defense:</span> <span>{{combatData.defense}}</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="ps-body">
+
+    <section class="ps-attrs">
+      <h2 class="ps-section-title">{{localize "STARWARSD6.Tab.Attributes"}}</h2>
+      <div class="ps-attrs-grid">
+        {{#each attributeGroups as |group|}}
+        <div class="ps-attr-block">
+          <div class="ps-attr-header">
+            <span class="ps-attr-name">{{localize group.label}}</span>
+            <span class="ps-attr-dice">{{group.dice}}D{{#if group.pips}}+{{group.pips}}{{/if}}</span>
+          </div>
+          {{#if group.skills.length}}
+          <ul class="ps-skill-list">
+            {{#each group.skills as |skill|}}
+            <li>
+              <span class="ps-skill-name">{{skill.name}}</span>
+              <span class="ps-skill-dice">{{skill.dicePool}}D{{#if skill.pips}}+{{skill.pips}}{{/if}}</span>
+            </li>
+            {{/each}}
+          </ul>
+          {{/if}}
+        </div>
+        {{/each}}
+      </div>
+    </section>
+
+    <section class="ps-combat">
+      <h2 class="ps-section-title">{{localize "STARWARSD6.Tab.Combat"}}</h2>
+
+      <div class="ps-wound-grid">
+        <div class="ps-wound-cell">
+          <div class="ps-wound-label">{{localize "STARWARSD6.Combat.Stun"}} ({{combatData.thresholdStun}})</div>
+          <div class="ps-hit-boxes">
+            {{#each combatData.stunBoxes as |box|}}
+            <span class="ps-hit-box {{#if box.marked}}marked{{/if}}"></span>
+            {{/each}}
+          </div>
+        </div>
+        <div class="ps-wound-cell">
+          <div class="ps-wound-label">{{localize "STARWARSD6.Combat.Wound"}} ({{combatData.thresholdWound}})</div>
+          <div class="ps-hit-boxes">
+            {{#each combatData.woundBoxes as |box|}}
+            <span class="ps-hit-box {{#if box.marked}}marked{{/if}}"></span>
+            {{/each}}
+          </div>
+        </div>
+        <div class="ps-wound-cell">
+          <div class="ps-wound-label">{{localize "STARWARSD6.Combat.Incap"}} ({{combatData.thresholdIncap}})</div>
+          <div class="ps-hit-boxes">
+            {{#each combatData.incapBoxes as |box|}}
+            <span class="ps-hit-box {{#if box.marked}}marked{{/if}}"></span>
+            {{/each}}
+          </div>
+        </div>
+        <div class="ps-wound-cell">
+          <div class="ps-wound-label">{{localize "STARWARSD6.Combat.Mortal"}} ({{combatData.thresholdMortal}})</div>
+          <div class="ps-hit-boxes">
+            {{#each combatData.mortalBoxes as |box|}}
+            <span class="ps-hit-box {{#if box.marked}}marked{{/if}}"></span>
+            {{/each}}
+          </div>
+        </div>
+      </div>
+
+      {{#if weapons.length}}
+      <h3 class="ps-subsection-title">{{localize "STARWARSD6.Combat.Weapons"}}</h3>
+      {{#each weapons as |w|}}
+      <div class="ps-weapon-row">
+        <span class="ps-inv-name">{{w.name}}</span>
+        <span class="ps-inv-stat">{{w.damageDice}}D{{#if w.damagePips}}+{{w.damagePips}}{{/if}}</span>
+        <span class="ps-inv-stat">{{w.attackSkill}}</span>
+        <span class="ps-inv-stat">{{w.range}}</span>
+      </div>
+      {{/each}}
+      {{/if}}
+    </section>
+
+  </div>
+
+  {{#if system.notes}}
+  <section class="ps-notes">
+    <h2 class="ps-section-title">{{localize "STARWARSD6.NPC.Notes"}}</h2>
+    <p class="ps-notes-text">{{system.notes}}</p>
+  </section>
+  {{/if}}
+
+</div>

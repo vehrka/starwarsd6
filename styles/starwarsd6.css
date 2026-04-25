@@ -1065,6 +1065,25 @@
   background: #eee;
   color: #000;
 }
+.starwarsd6.sheet.actor.npc .npc-footer {
+  padding: 6px 4px 2px;
+  border-top: 1px solid #ddd;
+  margin-top: 4px;
+}
+.starwarsd6.sheet.actor.npc .npc-footer .print-btn {
+  background: none;
+  border: 1px solid #888;
+  cursor: pointer;
+  padding: 2px 10px;
+  font-size: 0.8em;
+  border-radius: 3px;
+  color: #444;
+  line-height: 1.4;
+}
+.starwarsd6.sheet.actor.npc .npc-footer .print-btn:hover {
+  background: #eee;
+  color: #000;
+}
 
 /* ===== PRINT SHEET (screen view in ApplicationV2 window) ===== */
 .starwarsd6.print-sheet {
