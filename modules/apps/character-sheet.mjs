@@ -29,7 +29,8 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
       toggleKeptUp: CharacterSheet.#toggleKeptUp,
       incrementStat: CharacterSheet.#incrementStat,
       decrementStat: CharacterSheet.#decrementStat,
-      editImage: CharacterSheet.#editImage
+      editImage: CharacterSheet.#editImage,
+      printSheet: CharacterSheet.#printSheet
     }
   };
 
@@ -745,5 +746,10 @@ export default class CharacterSheet extends HandlebarsApplicationMixin(foundry.a
       callback: path => this.document.update({ [attr]: path })
     });
     fp.browse(current);
+  }
+
+  static async #printSheet(_event, _target) {
+    const { default: CharacterPrintSheet } = await import("./character-print.mjs");
+    new CharacterPrintSheet(this.document).render(true);
   }
 }

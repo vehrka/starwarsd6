@@ -1,0 +1,212 @@
+<div class="starwarsd6 print-sheet">
+
+  {{!-- HEADER: portrait + name + bio stats --}}
+  <header class="ps-header">
+    <img src="{{document.img}}" class="ps-portrait" alt="{{document.name}}" />
+    <div class="ps-header-info">
+      <h1 class="ps-name">{{document.name}}</h1>
+      <div class="ps-bio-row">
+        <span class="ps-label">Type:</span> <span>{{system.characterType}}</span>
+        <span class="ps-label">Ht:</span> <span>{{system.height}}</span>
+        <span class="ps-label">Wt:</span> <span>{{system.weight}}</span>
+        <span class="ps-label">Sex:</span> <span>{{system.sex}}</span>
+        <span class="ps-label">Age:</span> <span>{{system.age}}</span>
+        <span class="ps-label">Move:</span> <span>{{system.move}}</span>
+      </div>
+      <div class="ps-points-row">
+        <span class="ps-label">CP:</span> <span class="ps-point-val">{{system.characterPoints}}</span>
+        <span class="ps-label">FP:</span> <span class="ps-point-val">{{system.forcePoints}}</span>
+        <span class="ps-label">DSP:</span> <span class="ps-point-val">{{system.darkSidePoints}}</span>
+      </div>
+    </div>
+  </header>
+
+  {{!-- MAIN BODY: attributes+skills (left) | combat (right) --}}
+  <div class="ps-body">
+
+    <section class="ps-attrs">
+      <h2 class="ps-section-title">{{localize "STARWARSD6.Tab.Attributes"}}</h2>
+      <div class="ps-attrs-grid">
+        {{#each attributeGroups as |group|}}
+        <div class="ps-attr-block">
+          <div class="ps-attr-header">
+            <span class="ps-attr-name">{{localize group.label}}</span>
+            <span class="ps-attr-dice">{{group.dice}}D{{#if group.pips}}+{{group.pips}}{{/if}}</span>
+          </div>
+          {{#if group.skills.length}}
+          <ul class="ps-skill-list">
+            {{#each group.skills as |skill|}}
+            <li>
+              <span class="ps-skill-name">{{skill.name}}</span>
+              <span class="ps-skill-dice">{{skill.dicePool}}D{{#if skill.pips}}+{{skill.pips}}{{/if}}</span>
+            </li>
+            {{/each}}
+          </ul>
+          {{/if}}
+        </div>
+        {{/each}}
+      </div>
+    </section>
+
+    <section class="ps-combat">
+      <h2 class="ps-section-title">{{localize "STARWARSD6.Tab.Combat"}}</h2>
+      <div class="ps-defense-row">
+        <span class="ps-label">Ranged:</span> <strong>{{combatData.rangedDefense}}</strong>
+        <span class="ps-sep">|</span>
+        <span class="ps-label">Melee:</span> <strong>{{combatData.meleeDefense}}</strong>
+        <span class="ps-sep">|</span>
+        <span class="ps-label">Brawling:</span> <strong>{{combatData.brawlingDefense}}</strong>
+      </div>
+
+      <div class="ps-wound-grid">
+        <div class="ps-wound-cell">
+          <div class="ps-wound-label">Stun ({{combatData.thresholdStun}})</div>
+          <div class="ps-hit-boxes">
+            {{#each combatData.stunBoxes as |box|}}
+            <span class="ps-hit-box {{#if box.marked}}marked{{/if}}"></span>
+            {{/each}}
+          </div>
+        </div>
+        <div class="ps-wound-cell">
+          <div class="ps-wound-label">Wound ({{combatData.thresholdWound}})</div>
+          <div class="ps-hit-boxes">
+            {{#each combatData.woundBoxes as |box|}}
+            <span class="ps-hit-box {{#if box.marked}}marked{{/if}}"></span>
+            {{/each}}
+          </div>
+        </div>
+        <div class="ps-wound-cell">
+          <div class="ps-wound-label">Incapacitated ({{combatData.thresholdIncap}})</div>
+          <div class="ps-hit-boxes">
+            {{#each combatData.incapBoxes as |box|}}
+            <span class="ps-hit-box {{#if box.marked}}marked{{/if}}"></span>
+            {{/each}}
+          </div>
+        </div>
+        <div class="ps-wound-cell">
+          <div class="ps-wound-label">Mortally Wounded ({{combatData.thresholdMortal}})</div>
+          <div class="ps-hit-boxes">
+            {{#each combatData.mortalBoxes as |box|}}
+            <span class="ps-hit-box {{#if box.marked}}marked{{/if}}"></span>
+            {{/each}}
+          </div>
+        </div>
+      </div>
+
+      {{#if weapons}}
+      <h3 class="ps-subsection-title">Equipped Weapons</h3>
+      {{#each weapons as |w|}}
+      {{#if w.equipped}}
+      <div class="ps-weapon-row">
+        <span class="ps-inv-name">{{w.name}}</span>
+        <span class="ps-inv-stat">{{w.damageDice}}D{{#if w.damagePips}}+{{w.damagePips}}{{/if}}</span>
+        <span class="ps-inv-stat">{{w.attackSkill}}</span>
+        <span class="ps-inv-stat">{{w.range}}</span>
+      </div>
+      {{/if}}
+      {{/each}}
+      {{/if}}
+    </section>
+
+  </div>{{!-- end ps-body --}}
+
+  {{!-- INVENTORY --}}
+  {{#if weapons}}
+  <section class="ps-inventory">
+    <h2 class="ps-section-title">{{localize "STARWARSD6.Tab.Inventory"}}</h2>
+    <div class="ps-inv-subsection">
+      <span class="ps-inv-header">Weapons</span>
+      {{#each weapons as |w|}}
+      <div class="ps-inv-row">
+        <span class="ps-inv-name">{{w.name}}</span>
+        <span class="ps-inv-stat">{{w.damageDice}}D{{#if w.damagePips}}+{{w.damagePips}}{{/if}}</span>
+        <span class="ps-inv-stat">{{w.attackSkill}}</span>
+        <span class="ps-inv-stat">{{w.range}}</span>
+        {{#if w.equipped}}<span class="ps-equipped">E</span>{{/if}}
+      </div>
+      {{/each}}
+    </div>
+    {{#if armors}}
+    <div class="ps-inv-subsection">
+      <span class="ps-inv-header">Armor</span>
+      {{#each armors as |a|}}
+      <div class="ps-inv-row">
+        <span class="ps-inv-name">{{a.name}}</span>
+        <span class="ps-inv-stat">+{{a.armorBonus}}</span>
+        {{#if a.equipped}}<span class="ps-equipped">E</span>{{/if}}
+      </div>
+      {{/each}}
+    </div>
+    {{/if}}
+    {{#if equipment}}
+    <div class="ps-inv-subsection">
+      <span class="ps-inv-header">Equipment</span>
+      {{#each equipment as |e|}}
+      <div class="ps-inv-row">
+        <span class="ps-inv-name">{{e.name}}</span>
+        {{#if e.quantity}}<span class="ps-inv-stat">×{{e.quantity}}</span>{{/if}}
+      </div>
+      {{/each}}
+    </div>
+    {{/if}}
+  </section>
+  {{/if}}
+
+  {{!-- FORCE --}}
+  {{#if forceData}}
+  <section class="ps-force">
+    <h2 class="ps-section-title">{{localize "STARWARSD6.Tab.Force"}}</h2>
+    <div class="ps-force-skills">
+      <div class="ps-force-skill-row">
+        <span class="ps-label">{{forceData.skills.control.label}}:</span>
+        <span>{{forceData.skills.control.dice}}D{{#if forceData.skills.control.pips}}+{{forceData.skills.control.pips}}{{/if}}</span>
+        <span class="ps-sep">|</span>
+        <span class="ps-label">{{forceData.skills.sense.label}}:</span>
+        <span>{{forceData.skills.sense.dice}}D{{#if forceData.skills.sense.pips}}+{{forceData.skills.sense.pips}}{{/if}}</span>
+        <span class="ps-sep">|</span>
+        <span class="ps-label">{{forceData.skills.alter.label}}:</span>
+        <span>{{forceData.skills.alter.dice}}D{{#if forceData.skills.alter.pips}}+{{forceData.skills.alter.pips}}{{/if}}</span>
+      </div>
+    </div>
+    {{#if forceData.forcePowers.length}}
+    <table class="ps-force-table">
+      <thead>
+        <tr>
+          <th>Power</th>
+          <th>Control</th>
+          <th>Sense</th>
+          <th>Alter</th>
+          <th>Kept Up</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each forceData.forcePowers as |p|}}
+        <tr>
+          <td>{{p.name}}</td>
+          <td>{{p.controlDifficulty}}</td>
+          <td>{{p.senseDifficulty}}</td>
+          <td>{{p.alterDifficulty}}</td>
+          <td>{{#if p.keptUp}}Yes{{/if}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+    {{/if}}
+  </section>
+  {{/if}}
+
+  {{!-- DESCRIPTION / NOTES --}}
+  {{#if system.description}}
+  <section class="ps-notes">
+    <h2 class="ps-section-title">Description</h2>
+    <p class="ps-notes-text">{{system.description}}</p>
+  </section>
+  {{/if}}
+  {{#if system.notes}}
+  <section class="ps-notes">
+    <h2 class="ps-section-title">Notes</h2>
+    <p class="ps-notes-text">{{system.notes}}</p>
+  </section>
+  {{/if}}
+
+</div>
