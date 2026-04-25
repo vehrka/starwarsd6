@@ -1,6 +1,6 @@
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 
-const ATTRIBUTE_KEYS = ["DEX", "KNO", "MEC", "PER", "STR", "TEC"];
+const ATTRIBUTE_KEYS = ["DEX", "PER", "KNO", "STR", "MEC", "TEC"];
 
 function buildBoxArray(total, marked) {
   return Array.from({ length: total }, (_, i) => ({ marked: i < marked }));
