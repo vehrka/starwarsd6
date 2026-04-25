@@ -1398,9 +1398,37 @@
     break-inside: avoid;
   }
 
-  .starwarsd6.print-sheet .ps-hit-box {
+  .starwarsd6.print-sheet .ps-hit-box,
+  .starwarsd6.print-sheet .ps-attr-header,
+  .starwarsd6.print-sheet .ps-skill-list li,
+  .starwarsd6.print-sheet .ps-wound-cell {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  .starwarsd6.print-sheet .ps-attr-header {
+    border-bottom: 1px solid #333 !important;
+  }
+
+  .starwarsd6.print-sheet .ps-skill-list li {
+    border-bottom: 1px dotted #ddd !important;
+  }
+
+  .starwarsd6.print-sheet .ps-wound-cell {
+    border: 1px solid #aaa !important;
+  }
+
+  .starwarsd6.print-sheet .ps-hit-box {
+    border: 1px solid #555 !important;
+    background: #fff !important;
+  }
+
+  .starwarsd6.print-sheet .ps-section-title {
+    border-bottom: 2px solid #1a1a1a !important;
+  }
+
+  .starwarsd6.print-sheet .ps-subsection-title {
+    border-bottom: 1px solid #555 !important;
   }
 
   .starwarsd6.print-sheet .ps-hit-box.marked {
