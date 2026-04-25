@@ -20,7 +20,8 @@ export default class NpcSheet extends HandlebarsApplicationMixin(foundry.applica
       rollAttribute: NpcSheet.#rollAttribute,
       rollSkill:     NpcSheet.#rollSkill,
       rollAttack:    NpcSheet.#rollAttack,
-      deleteItem:    NpcSheet.#deleteItem
+      deleteItem:    NpcSheet.#deleteItem,
+      printSheet:    NpcSheet.#printSheet
     }
   };
 
@@ -279,6 +280,11 @@ export default class NpcSheet extends HandlebarsApplicationMixin(foundry.applica
     const item = this.document.items.get(itemId);
     if (!item) return;
     await item.delete();
+  }
+
+  static async #printSheet(_event, _target) {
+    const { default: NpcPrintSheet } = await import("./npc-print.mjs");
+    new NpcPrintSheet(this.document).render(true);
   }
 
   /**
