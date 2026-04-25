@@ -1159,7 +1159,7 @@
 
 .starwarsd6.print-sheet .ps-attrs-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 0 8px;
 }
 

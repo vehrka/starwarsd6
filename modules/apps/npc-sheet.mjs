@@ -6,7 +6,7 @@ import RollDialog from "./roll-dialog.mjs";
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 
-const ATTRIBUTE_KEYS = ["DEX", "KNO", "MEC", "PER", "STR", "TEC"];
+const ATTRIBUTE_KEYS = ["DEX", "PER", "KNO", "STR", "MEC", "TEC"];
 
 export default class NpcSheet extends HandlebarsApplicationMixin(foundry.applications.sheets.ActorSheetV2) {
   static DEFAULT_OPTIONS = {
