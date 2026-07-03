@@ -1,4 +1,6 @@
-Here’s a practical migration checklist for updating a **system** from Foundry V13 to V14. The main idea is to audit anything your system did around templates, active effects, scene levels/regions, canvas rendering, and document/data schema assumptions, because V14 shifts several of those from custom implementation into core features. [foundryvtt](https://foundryvtt.com/releases/14.359)
+## What changed
+Foundry v14 introduces major platform shifts that can affect a game system: Scene Levels, a reworked Active Effects model, Template Regions replacing Measured Templates, pop-out applications, and several API/data-structure changes . Foundry’s own release notes also warn that systems and modules are not instantly updated just because core Foundry is stable, so you should expect some lag and breaking changes in your system code .
+
 
 ## Checklist
 
@@ -33,9 +35,45 @@ Here’s a practical migration checklist for updating a **system** from Foundry 
 3. Fix metadata and compatibility declarations. [foundryvtt](https://foundryvtt.com/article/migration/)
 4. Migrate template/effect/region logic first. [foundryvtt](https://foundryvtt.com/releases/14.352)
 5. Run schema and migration tests next. [foundryvtt](https://foundryvtt.com/article/migration/)
-6. Finish with UI, canvas, and gameplay regressions. [foundryvtt](https://foundryvtt.com/releases/14.352)
 
-## Good starting tests
+## Migration approach
+A safe upgrade path is:
+1. Make a full backup of your Foundry data folder and your system repository.
+2. Install v14 in a separate environment or portable build.
+3. Run the system with no modules first.
+4. Open a copy of your world so Foundry runs its migration scripts.
+5. Fix system code, documents, sheets, and migrations until the world loads cleanly .
 
-A useful first test is to create a simple encounter that uses one region-based area effect, one elevation change, and one active effect with a finite duration. If that works, you have confirmed the three V14 areas most likely to break a V13 system: regions, levels, and effects. [foundryvtt](https://foundryvtt.com/releases/14.359)
+Foundry’s release notes explicitly say v14 is not an in-place update inside Foundry; you need to uninstall/reinstall or use a separate installation, and testing in isolation is the recommended approach .
+
+## System code areas to check
+Focus your migration review on:
+- Document schemas and prepared data.
+- Active Effects application logic.
+- Token/scene/region-related code.
+- Template handling, since measured templates were removed.
+- UI code for sheets, dialogs, and pop-out behavior.
+- Any canvas, vision, or movement hooks tied to scene geometry .
+
+Because v14 includes changes to how scene regions, elevations, and token-linked regions work, any system that uses custom movement, area effects, or map interactions should be regression-tested carefully .
+
+## Practical refactor plan
+A good order of work is:
+- Update `system.json` compatibility fields for v14.
+- Fix deprecated or removed API calls.
+- Run migrations for actor, item, scene, and effect data.
+- Test character sheets and item use workflows.
+- Test combat, targeting, conditions, and area effects.
+- Test compendium import/export and world migration .
+
+If your system uses a lot of automation, expect the biggest pain points in data migration and effect resolution rather than basic sheet rendering .
+
+## Recommended workflow
+For a developed system, I’d use this sequence:
+- Branch for v14.
+- Add a migration test world with sample actors/items/scenes.
+- Run the system under v14 with debug logging enabled.
+- Fix schema/migration issues first.
+- Then fix rendering and interaction issues.
+- Finally, validate with real player workflows .
 
